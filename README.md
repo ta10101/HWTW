@@ -17,6 +17,19 @@ Desktop app for setting up a **Holo Edge Node** as a [Holochain Wind Tunnel](htt
 
 **One-page install only:** **[INSTALL.md](INSTALL.md)** (same Windows / Linux steps, easy to print or share).
 
+### What we do **not** cover
+
+| Not covered | Notes |
+| ----------- | ----- |
+| **macOS** | No installer or maintained guide. You’d need Python 3.10+, Tk, Docker Desktop for Mac, and run from **source** (`pip` + `main.py`) on your own. |
+| **Linux without `apt`** (Fedora, Arch, openSUSE, NixOS, …) | **`install-linux.sh`** / **`fetch-hwtw-linux.sh`** are only for **Debian/Ubuntu-style** systems. On other distros, install **Python 3.10+**, **venv**, **Tk**, **pip**, and Docker yourself, then run **`python3 main.py`**. |
+| **Chromebook without Linux** | There is **no** Chrome OS or Android build. **Linux (Crostini)** must be turned on in Settings. |
+| **Windows older than 10** | Not a supported target; use Windows **10/11**, another PC, or a VM. |
+| **Docker / WSL inside the app** | **Docker** is always a **separate** install. On Windows, **WSL 2** is separate too — HWTW only **starts** or **guides** you; it does not bundle the engine. |
+| **Managed / locked-down devices** | Schools and employers often block Docker, Linux, or admin installs — we can’t bypass policy. |
+| **Chromebook + Docker + Wind Tunnel** | Even with Linux enabled, **Docker in Crostini** is often **limited**; the runner uses **privileged** / **host networking** flags that **may not work** on every device. Check Holo’s official guidance for **supported** setups. |
+| **Official Holo support** | This repo is **not** from Holo/Holochain. Participation rules, eligibility, and infrastructure are per **official Holo docs**. |
+
 ---
 
 ## Install guide — Windows

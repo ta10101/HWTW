@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **README:** install hub (table), full **Windows** / **Linux** guides (steps, paths A–D, checklists); cross-platform title.
+- **README** + **INSTALL.md:** **“What we do not cover”** (macOS, non-apt Linux, Chromebook without Linux, old Windows, Docker/WSL scope, managed devices, Chromebook Docker limits, third-party disclaimer).
 
 ### Security
 
