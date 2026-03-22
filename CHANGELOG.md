@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.12] - 2026-03-22
+
+### Added
+
+- **Windows MSI:** **WixUI_FeatureTree** wizard (license + setup type). Nested **Desktop shortcut** feature (public desktop); use **Custom** to disable. **`License.rtf`** in **`packaging/wix/`**.
+
+### Fixed
+
+- **Frozen Windows build:** **`--collect-submodules psutil`** and extra **`psutil._pswindows` / `psutil._psutil_windows`** hidden imports to improve bundling.
+- **Frozen app startup:** If **psutil** fails to load (e.g. **Defender** quarantine), show a **warning** and **continue** — Wind Tunnel / Docker still work; resource labels stay “unknown” until fixed.
+
 ## [1.2.11] - 2026-03-22
 
 ### Added

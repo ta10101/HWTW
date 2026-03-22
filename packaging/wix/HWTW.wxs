@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- WiX 3.x — built in CI with candle/light. Variables: ProductVersion, HwtwExe, ReqTxt -->
+<!-- WiX 3.x — candle/light + WixUIExtension. Variables: ProductVersion, HwtwExe, ReqTxt -->
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <WixVariable Id="WixUILicenseRtf" Value="packaging\wix\License.rtf" />
   <Product
       Id="*"
       Name="HWTW (Holo Wind Tunnel GUI)"
@@ -17,9 +18,25 @@
         Comments="Not affiliated with Holo or Holochain Foundation." />
     <MajorUpgrade DowngradeErrorMessage="A newer version of HWTW is already installed." />
     <MediaTemplate EmbedCab="yes" />
-    <Feature Id="MainFeature" Title="HWTW" Level="1">
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+    <UIRef Id="WixUI_FeatureTree" />
+    <Feature
+        Id="MainFeature"
+        Title="HWTW (Holo Wind Tunnel GUI)"
+        Level="1"
+        Display="expand"
+        ConfigurableDirectory="INSTALLFOLDER">
       <ComponentGroupRef Id="ProductComponents" />
       <ComponentRef Id="cmpStartMenuShortcut" />
+      <Feature
+          Id="DesktopShortcutFeature"
+          Title="Desktop shortcut"
+          Description="Adds an HWTW icon to the shared (public) desktop. On Custom setup you can turn this off."
+          Level="1"
+          Display="expand"
+          AllowAdvertise="no">
+        <ComponentRef Id="cmpDesktopShortcut" />
+      </Feature>
     </Feature>
   </Product>
 
@@ -28,7 +45,6 @@
       <Directory Id="ProgramFiles64Folder">
         <Directory Id="INSTALLFOLDER" Name="HWTW" />
       </Directory>
-      <!-- All users → Start Menu so the MSI visibly “does something” after install (app is not auto-started). -->
       <Directory Id="CommonProgramsFolder">
         <Directory Id="ApplicationProgramsFolder" Name="HWTW" />
       </Directory>
@@ -60,6 +76,26 @@
             Root="HKLM"
             Key="Software\ta10101\HWTW"
             Name="StartMenuShortcut"
+            Type="integer"
+            Value="1"
+            KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+
+  <Fragment>
+    <DirectoryRef Id="PublicDesktopFolder">
+      <Component Id="cmpDesktopShortcut" Guid="*">
+        <Shortcut
+            Id="scHWTWDesktop"
+            Name="HWTW"
+            Description="Holo Wind Tunnel GUI"
+            Target="[#filHWTWexe]"
+            WorkingDirectory="INSTALLFOLDER" />
+        <RegistryValue
+            Root="HKLM"
+            Key="Software\ta10101\HWTW"
+            Name="DesktopShortcut"
             Type="integer"
             Value="1"
             KeyPath="yes" />

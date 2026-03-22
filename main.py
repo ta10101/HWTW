@@ -29,11 +29,15 @@ psutil = None  # set in bootstrap_requirements()
 _SINGLE_INSTANCE_MUTEX: object | None = None
 _SINGLE_INSTANCE_LOCK_FD: int | None = None
 
-__version__ = "1.2.11"
+__version__ = "1.2.12"
 APP_SHORT = "HWTW"
 
 # Shown once per version after upgrade (see _show_version_news_if_needed).
 WHATS_NEW_BY_VERSION: dict[str, str] = {
+    "1.2.12": (
+        "• **Windows MSI:** setup wizard (**WixUI**) with license page and **Custom** setup so you can turn **Desktop shortcut** on or off.\n"
+        "• **psutil:** If Windows Security blocks the bundled library, the app still **starts**; CPU/RAM/disk readouts stay limited until you allow the file or re-download."
+    ),
     "1.2.11": (
         "• **Windows MSI:** adds a **Start Menu** shortcut under **HWTW** — the installer still does **not** auto-launch the app; open **HWTW** from the menu or run **`C:\\Program Files\\HWTW\\HWTW.exe`**."
     ),
@@ -576,17 +580,17 @@ def bootstrap_requirements(parent: tk.Misc | None, *, force_install: bool = Fals
     if is_frozen():
         _load_psutil()
         if psutil is None:
-            messagebox.showerror(
-                "Missing built-in libraries",
-                "This build should include psutil but it failed to load.\n\n"
-                "• Download the latest **HWTW.exe** from:\n"
-                "  https://github.com/ta10101/HWTW/releases/latest\n"
-                "  (avoid very old releases — they may not bundle psutil correctly.)\n\n"
-                "• If you already use the latest build: Windows Security may be blocking a "
-                "component — try “Allow on device” or an exclusion for HWTW.exe.",
+            messagebox.showwarning(
+                "Hardware stats unavailable (psutil)",
+                "The app includes psutil for CPU/RAM/disk readouts, but it failed to load.\n\n"
+                "Common cause: **Windows Security** quarantined a file extracted from HWTW.exe. "
+                "Try **Protection history → Allow**, or add an exclusion for **HWTW.exe** "
+                "(and re-download from GitHub Releases if needed).\n\n"
+                "**Wind Tunnel and Docker** features still work. The resource panel will show "
+                "“unknown” until psutil loads.",
                 parent=parent,
             )
-        return psutil is not None
+        return True
 
     req = requirements_path()
     if not os.path.isfile(req):

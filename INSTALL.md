@@ -28,7 +28,7 @@ HWTW helps you run the **Holochain Wind Tunnel** runner with Docker.
 
 | Step | What to do |
 | ---- | ---------- |
-| 1 | Download **`HWTW.exe`** (portable) or **`HWTW.msi`** (64-bit installer) from **[GitHub Releases](https://github.com/ta10101/HWTW/releases)**. You do **not** need Python for either build. **MSI:** when setup completes, nothing may appear — that is normal. Open **Start** → type **`HWTW`** → run the shortcut (**v1.2.11+**), or open **`C:\Program Files\HWTW\HWTW.exe`**. |
+| 1 | Download **`HWTW.exe`** (portable) or **`HWTW.msi`** (64-bit installer) from **[GitHub Releases](https://github.com/ta10101/HWTW/releases)**. You do **not** need Python for either build. **MSI (**v1.2.12+**):** wizard with license → pick **Custom** to opt out of the **Desktop shortcut** → finish. Setup does not auto-launch the app — open **HWTW** from Start menu, desktop, or **`C:\Program Files\HWTW\HWTW.exe`**. |
 | 2 | Install **[Docker Desktop for Windows](https://docs.docker.com/desktop/setup/install/windows-install/)** (one time). Use **WSL 2** if Docker asks for it. |
 | 3 | **Start Docker Desktop** and wait until it is fully running. |
 | 4 | Run **`HWTW.exe`** (or the shortcut from **`HWTW.msi`** under Program Files). If SmartScreen warns, use **More info → Run anyway** if you trust the release. |

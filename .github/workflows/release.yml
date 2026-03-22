@@ -57,7 +57,8 @@ jobs:
         run: >
           pyinstaller --onefile --windowed --name HWTW
           --collect-all sv_ttk --collect-all psutil
-          --hidden-import=psutil
+          --collect-submodules psutil
+          --hidden-import=psutil --hidden-import=psutil._pswindows --hidden-import=psutil._psutil_windows
           main.py
 
       - name: Copy requirements for sidecar install
@@ -80,14 +81,14 @@ jobs:
           $msiVer = "$($parts[0]).$($parts[1]).$($parts[2]).0"
           Write-Host "MSI ProductVersion=$msiVer"
           New-Item -ItemType Directory -Force -Path obj | Out-Null
-          & candle.exe -nologo -arch x64 `
+          & candle.exe -nologo -arch x64 -ext WixUIExtension `
             "-dProductVersion=$msiVer" `
             "-dHwtwExe=dist\HWTW.exe" `
             "-dReqTxt=dist\requirements.txt" `
             -out obj\ `
             packaging\wix\HWTW.wxs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & light.exe -nologo -sw1076 -out dist\HWTW.msi obj\HWTW.wixobj
+          & light.exe -nologo -sw1076 -ext WixUIExtension -out dist\HWTW.msi obj\HWTW.wixobj
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           Get-Item dist\HWTW.msi | Format-List *
 

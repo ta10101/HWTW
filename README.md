@@ -61,7 +61,7 @@ You use a normal **Windows PC** and want the simplest path: a downloaded **`.exe
 
 1. **Download `HWTW.exe` or `HWTW.msi`**  
    Open **[Releases](https://github.com/ta10101/HWTW/releases)** → download **`HWTW.exe`** (portable) **or** **`HWTW.msi`** (64-bit installer: installs under **`C:\Program Files\HWTW\`**). You do **not** need Python on Windows for either build.  
-   **After the MSI finishes:** it does **not** open the app by design — press the **Windows** key, type **`HWTW`**, choose **HWTW** (Start Menu → **HWTW** folder from **v1.2.11+**), or run **`C:\Program Files\HWTW\HWTW.exe`** in File Explorer.
+   **After the MSI finishes:** it does **not** auto-open the app. The wizard (**v1.2.12+**) includes a **license** and **Setup Type** — choose **Custom** if you want to turn **Desktop shortcut** off. Then start **HWTW** from the **Start** menu (**HWTW** folder), the **desktop** shortcut (if enabled), or **`C:\Program Files\HWTW\HWTW.exe`**.
 
 2. **Install Docker Desktop** (one time, separate from HWTW)  
    Install from Docker’s site: **[Windows install guide](https://docs.docker.com/desktop/setup/install/windows-install/)**.  
@@ -352,7 +352,7 @@ git push -u origin main
 
 ```bash
 python -m pip install pyinstaller psutil "sv-ttk>=2.6.0"
-pyinstaller --onefile --windowed --name HWTW --collect-all sv_ttk --collect-all psutil --hidden-import=psutil main.py
+pyinstaller --onefile --windowed --name HWTW --collect-all sv_ttk --collect-all psutil --collect-submodules psutil --hidden-import=psutil --hidden-import=psutil._pswindows --hidden-import=psutil._psutil_windows main.py
 copy requirements.txt dist\
 ```
 
