@@ -7,15 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+(nothing yet)
+
+## [1.2.0] - 2026-03-22
+
 ### Added
 
+- **macOS support:** **`install-macos.sh`**, **`run-hwtw-macos.sh`**; bootstrap uses **`.venv`** on **darwin** (PEP 668 / Homebrew); **Docker Desktop** helper via **Homebrew** (`brew install --cask docker`); platform-specific **welcome**, **footer**, **diagnosis**, and **Easy** / **preflight** copy; **`primary_disk_usage()`** for APFS / home volume free space.
+- **CI:** **`macos-latest`** matrix job; **`bash -n`** on macOS install scripts.
 - **Linux easy install:** `install-linux.sh`, `run-hwtw-linux.sh`, `fetch-hwtw-linux.sh`; README curl/wget one-liners.
-- **`INSTALL.md`** — one-page Windows + Linux install; linked from README.
+- **`INSTALL.md`** — one-page **Windows, macOS, Linux** install.
+- **README:** **Install guide — macOS**; install hub table; **“What we do not cover”** updates (no macOS app in Releases; Docker-on-Mac limits).
 
 ### Changed
 
-- **README:** install hub (table), full **Windows** / **Linux** guides (steps, paths A–D, checklists); cross-platform title.
-- **README** + **INSTALL.md:** **“What we do not cover”** (macOS, non-apt Linux, Chromebook without Linux, old Windows, Docker/WSL scope, managed devices, Chromebook Docker limits, third-party disclaimer).
+- **README / INSTALL:** install guides, requirements table, **Release binaries** and **CI** sections for three OSes.
 
 ### Security
 

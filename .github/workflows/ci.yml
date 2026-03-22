@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.10", "3.12"]
     runs-on: ${{ matrix.os }}
     steps:
@@ -43,3 +43,7 @@ jobs:
       - name: Linux install scripts (bash syntax)
         if: runner.os == 'Linux'
         run: bash -n install-linux.sh && bash -n run-hwtw-linux.sh && bash -n fetch-hwtw-linux.sh
+
+      - name: macOS install scripts (bash syntax)
+        if: runner.os == 'macOS'
+        run: bash -n install-macos.sh && bash -n run-hwtw-macos.sh

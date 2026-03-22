@@ -23,7 +23,7 @@ from tkinter import filedialog, messagebox, scrolledtext, ttk
 
 psutil = None  # set in bootstrap_requirements()
 
-__version__ = "1.1.4"
+__version__ = "1.2.0"
 APP_SHORT = "HWTW"
 
 IMAGE = "ghcr.io/holochain/wind-tunnel-runner:latest"
@@ -31,6 +31,7 @@ RUNNER_STATUS_ORIGIN = "https://wind-tunnel-runner-status.holochain.org"
 GUIDE_URL = "https://holo.host/files/EdgeNodeWindTunnelGuide.pdf"
 GUIDE_HTML = "https://holo.host/resources/edge-node-wind-tunnel-guide/"
 DOCKER_WIN_INSTALL_URL = "https://docs.docker.com/desktop/setup/install/windows-install/"
+DOCKER_MAC_INSTALL_URL = "https://docs.docker.com/desktop/setup/install/mac-install/"
 WSL_LEARN_URL = "https://learn.microsoft.com/en-us/windows/wsl/install"
 MARKER = ".wind_tunnel_gui_setup_done"
 CONFIG_NAME = "hwtw_config.json"
@@ -39,6 +40,28 @@ CONFIG_NAME = "hwtw_config.json"
 MIN_RAM_BYTES = 8 * 1024**3
 MIN_DISK_FREE_BYTES = 10 * 1024**3
 DEFAULT_LOG_TAIL = 200
+
+
+def _disk_usage_paths() -> list[str]:
+    """Paths to try for free-space checks (APFS on macOS often needs Data volume or home)."""
+    if sys.platform == "win32":
+        return ["C:\\"]
+    home = os.path.expanduser("~")
+    if sys.platform == "darwin":
+        return [home, "/System/Volumes/Data", "/"]
+    return [home, "/"]
+
+
+def primary_disk_usage():
+    """Return psutil.disk_usage for the first usable path, or None."""
+    if psutil is None:
+        return None
+    for p in _disk_usage_paths():
+        try:
+            return psutil.disk_usage(p)
+        except OSError:
+            continue
+    return None
 
 
 def runner_status_check_url(hostname: str) -> str:
@@ -96,10 +119,10 @@ def is_externally_managed() -> bool:
 
 
 def _use_project_venv_for_bootstrap() -> bool:
-    """Linux source runs always use .venv — PEP 668 is universal on Chromebook/Debian; marker path can differ."""
+    """Linux/macOS source runs use .venv — PEP 668 on Debian, Chromebook, Homebrew Python, etc."""
     if is_frozen():
         return False
-    return sys.platform.startswith("linux")
+    return sys.platform.startswith("linux") or sys.platform == "darwin"
 
 
 def _venv_python(venv_dir: str) -> str | None:
@@ -170,8 +193,8 @@ def _bootstrap_via_project_venv(parent: tk.Misc | None, req: str) -> bool:
 
     if splash:
         splash_msg(
-            "Linux uses a protected system Python.\n"
-            "Creating a project virtual environment (.venv)…"
+            "Creating a project virtual environment (.venv)\n"
+            "so Python packages stay inside this folder (recommended on Linux and macOS)…"
         )
 
     if not venv_py:
@@ -546,15 +569,32 @@ def wind_tunnel_runner_running() -> bool:
 def build_diagnosis_text() -> str:
     blocks: list[str] = []
     if not docker_cli_ok():
-        blocks.append(
-            "DOCKER IS NOT READY\n"
-            "— Open “Docker Desktop” from the Start menu and wait until it says Docker is running "
-            "(whale icon in the taskbar).\n"
-            "— If Docker is not installed: use the “Install Docker Desktop” button in this app, "
-            "or install from docker.com and restart the PC if asked.\n"
-            "— On Windows, Docker needs WSL 2 with a Linux distro (e.g. Ubuntu). "
-            "If installs fail, search “WSL install” on learn.microsoft.com."
-        )
+        if sys.platform == "darwin":
+            blocks.append(
+                "DOCKER IS NOT READY\n"
+                "— Open **Docker Desktop** from Applications and wait until the menu-bar whale icon "
+                "shows Docker is running.\n"
+                "— If Docker is not installed: use **Install / fix Docker** in this app (Homebrew) "
+                "or install from docker.com.\n"
+                "— Apple Silicon and Intel are both supported by Docker Desktop for Mac."
+            )
+        elif sys.platform == "win32":
+            blocks.append(
+                "DOCKER IS NOT READY\n"
+                "— Open “Docker Desktop” from the Start menu and wait until it says Docker is running "
+                "(whale icon in the taskbar).\n"
+                "— If Docker is not installed: use the “Install Docker Desktop” button in this app, "
+                "or install from docker.com and restart the PC if asked.\n"
+                "— On Windows, Docker needs WSL 2 with a Linux distro (e.g. Ubuntu). "
+                "If installs fail, search “WSL install” on learn.microsoft.com."
+            )
+        else:
+            blocks.append(
+                "DOCKER IS NOT READY\n"
+                "— Install and start Docker on this system (package manager, Docker Desktop for Linux, etc.).\n"
+                "— Ensure `docker` works in a terminal (`docker info`).\n"
+                "— Use **Install / fix Docker** in this app for typical Linux command hints."
+            )
     elif sys.platform == "win32" and not wsl2_environment_ready():
         blocks.append(
             "WSL 2 IS NOT READY (Windows)\n"
@@ -571,13 +611,7 @@ def build_diagnosis_text() -> str:
                     f"— Holo’s guide asks for about 8 GiB RAM; this PC reports about {vm.total // (1024**3)} GiB total.\n"
                     f"— The app may still run, but performance could be poor."
                 )
-            du = None
-            for p in ("C:\\", "/"):
-                try:
-                    du = psutil.disk_usage(p)
-                    break
-                except OSError:
-                    continue
+            du = primary_disk_usage()
             if du and du.free < MIN_DISK_FREE_BYTES:
                 blocks.append(
                     f"LOW FREE DISK SPACE\n"
@@ -704,17 +738,17 @@ def try_install_docker_macos(parent: tk.Misc | None, *, confirm_brew: bool = Tru
             "Run: brew install --cask docker\n\nContinue?",
             parent=parent,
         ):
-            _open_url("https://docs.docker.com/desktop/setup/install/mac-install/")
+            _open_url(DOCKER_MAC_INSTALL_URL)
             return
-        creationflags = 0
-        if hasattr(subprocess, "CREATE_NEW_CONSOLE"):
-            creationflags = subprocess.CREATE_NEW_CONSOLE  # type: ignore[attr-defined]
+        popen_kw: dict = {}
+        if sys.platform == "win32" and hasattr(subprocess, "CREATE_NEW_CONSOLE"):
+            popen_kw["creationflags"] = subprocess.CREATE_NEW_CONSOLE  # type: ignore[attr-defined]
         try:
-            subprocess.Popen([brew, "install", "--cask", "docker"], creationflags=creationflags)
+            subprocess.Popen([brew, "install", "--cask", "docker"], **popen_kw)
         except Exception as e:
             messagebox.showerror("brew failed", str(e), parent=parent)
     else:
-        _open_url("https://docs.docker.com/desktop/setup/install/mac-install/")
+        _open_url(DOCKER_MAC_INSTALL_URL)
 
 
 def docker_setup_hint_linux() -> str:
@@ -783,15 +817,23 @@ def run_first_run_setup() -> None:
             offer_docker_on_first_launch(root)
         elif first and is_frozen():
             if not docker_cli_ok():
-                messagebox.showinfo(
-                    "One-time setup: Docker",
-                    "HWTW controls the Wind Tunnel using Docker.\n\n"
-                    "1) Install Docker Desktop for Windows (if you have not already).\n"
-                    "2) Start Docker Desktop and wait until it is fully running.\n"
-                    "3) Come back to this app — green status means you are ready.\n\n"
-                    "Use Help → “Why isn’t it working?” anytime.",
-                    parent=root,
-                )
+                if sys.platform == "darwin":
+                    _frozen_docker = (
+                        "HWTW controls the Wind Tunnel using Docker.\n\n"
+                        "1) Install **Docker Desktop for Mac** (if you have not already).\n"
+                        "2) Start Docker and wait until the menu-bar icon shows it is running.\n"
+                        "3) Return here — green Docker status means you are ready.\n\n"
+                        "Use Help → “Why isn’t it working?” anytime."
+                    )
+                else:
+                    _frozen_docker = (
+                        "HWTW controls the Wind Tunnel using Docker.\n\n"
+                        "1) Install Docker Desktop for Windows (if you have not already).\n"
+                        "2) Start Docker Desktop and wait until it is fully running.\n"
+                        "3) Come back to this app — green status means you are ready.\n\n"
+                        "Use Help → “Why isn’t it working?” anytime."
+                    )
+                messagebox.showinfo("One-time setup: Docker", _frozen_docker, parent=root)
         try:
             with open(setup_marker_path(), "w", encoding="utf-8") as f:
                 f.write("ok\n")
@@ -985,11 +1027,26 @@ class WindTunnelApp(tk.Tk):
 
         foot = ttk.Frame(main)
         foot.pack(fill=tk.X)
+        if sys.platform == "win32":
+            _foot = (
+                "Wind Tunnel needs Docker (separate install: Docker Desktop + WSL 2 on Windows). "
+                "The .exe bundles this app only — not Docker. "
+                "Flags --privileged / --net=host apply inside Docker’s Linux engine."
+            )
+        elif sys.platform == "darwin":
+            _foot = (
+                "Wind Tunnel needs Docker (install **Docker Desktop for Mac** separately). "
+                "Containers run in Docker’s Linux VM; flags like --privileged / --net=host apply there — "
+                "behavior can differ from bare Linux; see Holo’s guide."
+            )
+        else:
+            _foot = (
+                "Wind Tunnel needs Docker installed and running separately. "
+                "Flags --privileged / --net=host apply inside the container engine."
+            )
         ttk.Label(
             foot,
-            text="Wind Tunnel needs Docker (separate install on Windows: Docker Desktop + WSL 2). "
-            "The .exe bundles this app only — not Docker. "
-            "Flags --privileged / --net=host apply inside Docker’s Linux engine.",
+            text=_foot,
             font=("Segoe UI", 8),
             foreground="#555",
             wraplength=880,
@@ -1002,13 +1059,15 @@ class WindTunnelApp(tk.Tk):
         self.after(400, self._update_easy_dashboard)
 
     def _build_easy_tab(self, tab: ttk.Frame) -> None:
+        _easy_intro = (
+            "Follow the colored boxes below. Green = good. When Docker is ready"
+            + (" and (on Windows) WSL is green" if sys.platform == "win32" else "")
+            + ", enter your node name, download the image once, then press Start. "
+            "Use Help → “Why isn’t it working?” for plain-language fixes."
+        )
         intro = ttk.Label(
             tab,
-            text=(
-                "Follow the colored boxes below. Green = good. When Docker and (on Windows) WSL are green, "
-                "enter your node name, download the image once, then press Start. "
-                "Use Help → “Why isn’t it working?” for plain-language fixes."
-            ),
+            text=_easy_intro,
             wraplength=860,
             font=("Segoe UI", 10),
         )
@@ -1038,8 +1097,8 @@ class WindTunnelApp(tk.Tk):
         ]
 
         _tip_docker = (
-            "Docker Desktop (or another Docker engine) must be installed and running. "
-            "The whale icon in the taskbar should be steady — open Docker and wait if it says Starting."
+            "Docker must be installed and running (Docker Desktop: menu bar / taskbar whale icon steady). "
+            "Open Docker and wait if it says Starting."
         )
         ToolTip(self._easy_fr_docker, _tip_docker)
         ToolTip(self._easy_pill_docker, _tip_docker)
@@ -1126,9 +1185,13 @@ class WindTunnelApp(tk.Tk):
 
         big = ttk.Frame(tab)
         big.pack(fill=tk.X, pady=16)
-        ttk.Button(big, text="Install / fix Docker (Windows helper)", command=self.on_install_docker).pack(
-            fill=tk.X, pady=3, ipady=6
-        )
+        if sys.platform == "win32":
+            _docker_easy_lbl = "Install / fix Docker (Windows)"
+        elif sys.platform == "darwin":
+            _docker_easy_lbl = "Install / fix Docker (Mac)"
+        else:
+            _docker_easy_lbl = "Install / fix Docker"
+        ttk.Button(big, text=_docker_easy_lbl, command=self.on_install_docker).pack(fill=tk.X, pady=3, ipady=6)
         ttk.Button(big, text="1 — Download Wind Tunnel image (first time, may take a while)", command=self.on_pull).pack(
             fill=tk.X, pady=3, ipady=8
         )
@@ -1281,15 +1344,38 @@ class WindTunnelApp(tk.Tk):
         frm = ttk.Frame(win, padding=16)
         frm.pack(fill=tk.BOTH, expand=True)
         ttk.Label(frm, text="Holo Wind Tunnel helper (HWTW)", font=("Segoe UI", 12, "bold")).pack(anchor=tk.W)
-        msg = (
-            "You are on the Easy start tab — best for most people.\n\n"
-            "1) One-time: install Docker Desktop for Windows and start it (this app cannot bundle Docker).\n"
-            "2) Wait until the Docker and WSL tiles turn green.\n"
-            "3) Type a node name like nomad-client-yourname-01.\n"
-            "4) Tap “Download Wind Tunnel image”, then “Start Wind Tunnel”.\n\n"
-            "Hover the colored tiles for hints. Use Help → “Why isn’t it working?” if anything is red.\n\n"
-            "Advanced users: switch to “Expert tools & logs” for full Docker output."
-        )
+        if sys.platform == "darwin":
+            msg = (
+                "You are on the Easy start tab — best for most people.\n\n"
+                "1) One-time: install **Docker Desktop for Mac** and start it (this app cannot bundle Docker).\n"
+                "2) Wait until the **Docker** tile is green (WSL is Windows-only and shows N/A here).\n"
+                "3) Type a node name like nomad-client-yourname-01.\n"
+                "4) Tap “Download Wind Tunnel image”, then “Start Wind Tunnel”.\n\n"
+                "Containers run in Docker’s Linux VM — some flags may behave differently than on bare Linux; "
+                "see Holo’s guide.\n\n"
+                "Hover the colored tiles for hints. Use Help → “Why isn’t it working?” if anything is red.\n\n"
+                "Advanced users: switch to “Expert tools & logs” for full Docker output."
+            )
+        elif sys.platform == "win32":
+            msg = (
+                "You are on the Easy start tab — best for most people.\n\n"
+                "1) One-time: install Docker Desktop for Windows and start it (this app cannot bundle Docker).\n"
+                "2) Wait until the Docker and WSL tiles turn green.\n"
+                "3) Type a node name like nomad-client-yourname-01.\n"
+                "4) Tap “Download Wind Tunnel image”, then “Start Wind Tunnel”.\n\n"
+                "Hover the colored tiles for hints. Use Help → “Why isn’t it working?” if anything is red.\n\n"
+                "Advanced users: switch to “Expert tools & logs” for full Docker output."
+            )
+        else:
+            msg = (
+                "You are on the Easy start tab — best for most people.\n\n"
+                "1) One-time: install and start **Docker** on this system (this app cannot bundle Docker).\n"
+                "2) Wait until the **Docker** tile is green.\n"
+                "3) Type a node name like nomad-client-yourname-01.\n"
+                "4) Tap “Download Wind Tunnel image”, then “Start Wind Tunnel”.\n\n"
+                "Hover the colored tiles for hints. Use Help → “Why isn’t it working?” if anything is red.\n\n"
+                "Advanced users: switch to “Expert tools & logs” for full Docker output."
+            )
         ttk.Label(frm, text=msg, wraplength=460, font=("Segoe UI", 10)).pack(anchor=tk.W, pady=(12, 8))
 
         var_hide = tk.BooleanVar(value=False)
@@ -1354,6 +1440,8 @@ class WindTunnelApp(tk.Tk):
             if sys.platform == "win32":
                 w_ok = wsl2_environment_ready()
                 self._easy_set_pill(1, "WSL 2 (Windows)", "Ready ✓" if w_ok else "Set up WSL ✗", w_ok)
+            elif sys.platform == "darwin":
+                self._easy_set_pill(1, "WSL 2", "N/A (Mac)", None)
             else:
                 self._easy_set_pill(1, "WSL 2", "Not needed", None)
 
@@ -1368,13 +1456,7 @@ class WindTunnelApp(tk.Tk):
             if psutil is not None:
                 try:
                     vm = psutil.virtual_memory()
-                    du = None
-                    for p in ("C:\\", "/"):
-                        try:
-                            du = psutil.disk_usage(p)
-                            break
-                        except OSError:
-                            continue
+                    du = primary_disk_usage()
                     ram_b = vm.total >= MIN_RAM_BYTES
                     disk_b = du is None or du.free >= MIN_DISK_FREE_BYTES
                     pc_ok = ram_b and disk_b
@@ -1394,13 +1476,7 @@ class WindTunnelApp(tk.Tk):
                 self._var_prog_ram.set(float(vm.percent))
                 self._lbl_easy_cpu.configure(text=f"{cpu:.0f}%")
                 self._lbl_easy_ram.configure(text=f"{vm.percent:.0f}%")
-                du = None
-                for p in ("C:\\", "/"):
-                    try:
-                        du = psutil.disk_usage(p)
-                        break
-                    except OSError:
-                        continue
+                du = primary_disk_usage()
                 if du:
                     pct = 100.0 * (du.used / du.total) if du.total else 0.0
                     self._var_prog_disk.set(pct)
@@ -1427,6 +1503,8 @@ class WindTunnelApp(tk.Tk):
                 text=f"WSL 2: {'OK' if ok_w else 'not ready'}",
                 foreground=self._preflight_ok_color(ok_w),
             )
+        elif sys.platform == "darwin":
+            self.lbl_pf_wsl.configure(text="WSL 2: n/a (macOS)", foreground="#666")
         else:
             self.lbl_pf_wsl.configure(text="WSL 2: n/a (not Windows)", foreground="#666")
 
@@ -1442,13 +1520,7 @@ class WindTunnelApp(tk.Tk):
                 text=f"RAM: {vm.total // (1024**3)} GiB total — {'meets ≥8 GiB' if ok_ram else 'below 8 GiB guide minimum'}",
                 foreground=self._preflight_ok_color(ok_ram),
             )
-            du = None
-            for p in ("C:\\", "/"):
-                try:
-                    du = psutil.disk_usage(p)
-                    break
-                except OSError:
-                    continue
+            du = primary_disk_usage()
             if du:
                 ok_disk = du.free >= MIN_DISK_FREE_BYTES
                 self.lbl_pf_disk.configure(

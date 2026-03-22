@@ -11,23 +11,25 @@ Desktop app for setting up a **Holo Edge Node** as a [Holochain Wind Tunnel](htt
 | I use… | Go to |
 | ------ | ----- |
 | **Windows 10/11** | [Install guide — Windows](#install-guide--windows) |
+| **macOS** (Intel or Apple Silicon) | [Install guide — macOS](#install-guide--macos) |
 | **Linux** (Chromebook Linux, Ubuntu, Debian, …) | [Install guide — Linux](#install-guide--linux) |
 
 **Everyone:** Wind Tunnel needs **Docker** running. HWTW only drives Docker — it does not replace Docker.
 
-**One-page install only:** **[INSTALL.md](INSTALL.md)** (same Windows / Linux steps, easy to print or share).
+**One-page install only:** **[INSTALL.md](INSTALL.md)** (Windows, macOS, Linux — easy to print or share).
 
 ### What we do **not** cover
 
 | Not covered | Notes |
 | ----------- | ----- |
-| **macOS** | No installer or maintained guide. You’d need Python 3.10+, Tk, Docker Desktop for Mac, and run from **source** (`pip` + `main.py`) on your own. |
+| **macOS `.app` in GitHub Releases** | CI builds **`HWTW.exe`** for Windows only. On Mac, use **`install-macos.sh`** + **`run-hwtw-macos.sh`** or **`python3 main.py`** (see [macOS guide](#install-guide--macos)). |
 | **Linux without `apt`** (Fedora, Arch, openSUSE, NixOS, …) | **`install-linux.sh`** / **`fetch-hwtw-linux.sh`** are only for **Debian/Ubuntu-style** systems. On other distros, install **Python 3.10+**, **venv**, **Tk**, **pip**, and Docker yourself, then run **`python3 main.py`**. |
 | **Chromebook without Linux** | There is **no** Chrome OS or Android build. **Linux (Crostini)** must be turned on in Settings. |
 | **Windows older than 10** | Not a supported target; use Windows **10/11**, another PC, or a VM. |
 | **Docker / WSL inside the app** | **Docker** is always a **separate** install. On Windows, **WSL 2** is separate too — HWTW only **starts** or **guides** you; it does not bundle the engine. |
 | **Managed / locked-down devices** | Schools and employers often block Docker, Linux, or admin installs — we can’t bypass policy. |
 | **Chromebook + Docker + Wind Tunnel** | Even with Linux enabled, **Docker in Crostini** is often **limited**; the runner uses **privileged** / **host networking** flags that **may not work** on every device. Check Holo’s official guidance for **supported** setups. |
+| **macOS + Docker + Wind Tunnel** | Containers run in **Docker Desktop’s Linux VM**. **`--privileged` / `--net=host`** apply inside that VM, not on the Mac host — behavior can differ from bare Linux. Confirm with **Holo’s guide** whether your use case is supported. |
 | **Official Holo support** | This repo is **not** from Holo/Holochain. Participation rules, eligibility, and infrastructure are per **official Holo docs**. |
 
 ---
@@ -82,6 +84,47 @@ python main.py
 ```
 
 Use **Python 3.10+**. First run may install extra UI pieces (e.g. **sv-ttk**). To refresh deps: `python -m pip install -r requirements.txt`.
+
+---
+
+## Install guide — macOS
+
+### Who this is for
+
+**Mac** with **macOS** (Intel or Apple Silicon). There is **no** signed `.app` in Releases — you run the **Python** app with a small installer script or from source.
+
+### Before you start
+
+1. **Python 3.10+** with **Tkinter** (`import tkinter` must work). Easiest fixes if `python3` is missing or has no Tk:  
+   - **[python.org macOS installer](https://www.python.org/downloads/macos/)**, or  
+   - **Homebrew:** `brew install python@3.12`  
+2. **Docker Desktop for Mac** — install separately for Wind Tunnel **containers**: **[Docker Mac install](https://docs.docker.com/desktop/setup/install/mac-install/)**.  
+3. HWTW can run **`brew install --cask docker`** for you from **Install / fix Docker (Mac)** if [Homebrew](https://brew.sh) is installed.
+
+### Steps (recommended)
+
+1. Get the project: **`git clone https://github.com/ta10101/HWTW.git`** or **Code → Download ZIP** and unzip.  
+2. In **Terminal**, go to the folder that contains **`main.py`** (e.g. `cd ~/HWTW` or `cd ~/Downloads/HWTW-main`).  
+3. Run:
+
+   ```bash
+   bash install-macos.sh
+   ./run-hwtw-macos.sh
+   ```
+
+   This creates **`.venv`**, installs **`requirements.txt`**, and starts the GUI via **`run-hwtw-macos.sh`** next time.
+
+4. Install and **start Docker Desktop**, then use **Easy start** in HWTW like on other platforms.
+
+### Optional: `python3 main.py` only
+
+From the project folder, **`python3 main.py`** also works: the app will use **`.venv`** automatically on macOS when needed (PEP 668 / Homebrew).
+
+### Quick checklist (macOS)
+
+- [ ] **`python3 -c "import tkinter"`** succeeds  
+- [ ] **`install-macos.sh`** completed (or you use **`python3 main.py`**)  
+- [ ] **Docker Desktop for Mac** running when using Wind Tunnel  
 
 ---
 
@@ -195,12 +238,12 @@ If **`wget`** returns **404**, the repo is not public at that URL — see [Make 
 
 ## Requirements (summary)
 
-| | Windows | Linux (easy path) |
-| -- | -- | -- |
-| **App** | `HWTW.exe` from Releases, or Python + `requirements.txt` | Scripts create **`.venv`**; use **`run-hwtw-linux.sh`** |
-| **Python** | Only for source runs (3.10+) | Installed via **`install-linux.sh`** / `apt` |
-| **Docker** | Docker Desktop + WSL 2 (typical) | Your distro’s Docker package / engine |
-| **RAM / disk** | Holo guide suggests **≥ 8 GiB RAM**, **≥ 10 GiB** free disk | Same |
+| | Windows | macOS | Linux (easy path) |
+| -- | -- | -- | -- |
+| **App** | **`HWTW.exe`** from Releases, or Python + deps | **`install-macos.sh`** + **`run-hwtw-macos.sh`**, or **`python3 main.py`** | **`run-hwtw-linux.sh`** (after **`install-linux.sh`**) |
+| **Python** | Only for source runs (3.10+) | **3.10+** with **Tk** (python.org or Homebrew) | Via **`install-linux.sh`** / `apt` |
+| **Docker** | Docker Desktop + WSL 2 (typical) | **Docker Desktop for Mac** | Distro Docker package / engine |
+| **RAM / disk** | Holo guide: **≥ 8 GiB RAM**, **≥ 10 GiB** free | Same | Same |
 
 ---
 
@@ -213,7 +256,7 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-On **Linux**, prefer **`install-linux.sh`** unless you know your environment. On the **first run**, the app may create local files (e.g. **`.wind_tunnel_gui_setup_done`** — git-ignored).
+On **Linux**, prefer **`install-linux.sh`**. On **macOS**, prefer **`install-macos.sh`** (or let **`python3 main.py`** create **`.venv`**). On the **first run**, the app may create local files (e.g. **`.wind_tunnel_gui_setup_done`** — git-ignored).
 
 ---
 
@@ -235,16 +278,16 @@ The links in this README use **`https://github.com/ta10101/HWTW`**. A **404** fr
 - `docker pull ghcr.io/holochain/wind-tunnel-runner:latest`
 - `docker run` with `--hostname`, `--cgroupns=host`, `--net=host`, `--privileged`, `-d`, `--rm` as in the guide.
 - Stop runner containers for that image; refresh **filtered** runner `docker ps` and full `docker ps -a`.
-- **Preflight:** Docker daemon, WSL 2 (Windows), RAM/disk vs Holo guide minimums (8 GiB RAM, 10 GiB free disk).
+- **Preflight:** Docker daemon, **WSL 2** (Windows only), RAM/disk vs Holo guide minimums (8 GiB RAM, 10 GiB free disk); disk free space uses home / data volume on **macOS**.
 - Saves **hostname**, optional **dark theme**, and log tail in `hwtw_config.json` (next to the app; git-ignored).
 - Timestamped command log with **clear** / **save to .txt**; **copy** full `docker run` line; **docker logs** tail for the running runner.
 - **Holochain runner status** URL (copy/open) for [wind-tunnel-runner-status.holochain.org](https://wind-tunnel-runner-status.holochain.org/).
 - **View → Dark theme** ([sv-ttk](https://github.com/rdbende/Sun-Valley-ttk-theme)); window title shows **HWTW** + version.
 - **Easy start** tab: status tiles (Docker / WSL / tunnel / PC), CPU **sparkline**, **progress bars**, **tooltips**, **welcome** dialog, **Help**.
 
-## Windows release binary (CI)
+## Release binaries (CI)
 
-Pushing a **version tag** `v*` builds **`HWTW.exe`** with PyInstaller and uploads **`HWTW.exe`** + **`requirements.txt`** to a GitHub Release.
+Pushing a **version tag** `v*` builds **`HWTW.exe`** (Windows) with PyInstaller and uploads **`HWTW.exe`** + **`requirements.txt`** to a GitHub Release. **macOS** and **Linux** use the install scripts or **`python3 main.py`** from this repo — there is no `.dmg` / `.app` in Releases today.
 
 ## Publishing on GitHub
 
@@ -275,7 +318,7 @@ copy requirements.txt dist\
 
 ## CI
 
-GitHub Actions: `python -m py_compile main.py` on **ubuntu-latest** and **windows-latest**; Linux install scripts checked with **`bash -n`**.
+GitHub Actions: `python -m py_compile main.py` on **ubuntu-latest**, **windows-latest**, and **macos-latest**; **`bash -n`** on Linux and macOS install scripts.
 
 ## Security
 
