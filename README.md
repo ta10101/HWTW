@@ -78,7 +78,9 @@ Ship **`dist/HWTW.exe`** and **`dist/requirements.txt`** together.
 
 ## CI
 
-GitHub Actions runs on push and pull requests: install dependencies and `python -m py_compile main.py` on Ubuntu and Windows.
+GitHub Actions runs on push and pull requests: install dependencies and `python -m py_compile main.py` on **ubuntu-latest** and on a **[self-hosted, Windows]** runner (your PC must run `C:\actions-runner\run.cmd` so Windows jobs can start).
+
+To use **only** GitHub-hosted runners again, change `.github/workflows/ci.yml` and `release.yml` back to `runs-on: windows-latest`.
 
 ## License
 
