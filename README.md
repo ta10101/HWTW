@@ -55,9 +55,9 @@ The links in this README use **`https://github.com/ta10101/HWTW`**. A **404** in
 
 After that, **Releases**, **Download ZIP**, and Chromebook `wget` below all work without a GitHub password for **read-only** access.
 
-### Chromebook / Debian Linux (no Git password; use `venv` for `pip`)
+### Chromebook / Debian Linux (no Git password)
 
-**`pip install --user` is blocked** on Chromebook Linux (PEP 668). Always use a **virtual environment** as below.
+**`pip install` into system Python is blocked** on Chromebook Linux (PEP 668). **HWTW v1.1.2+** creates a project **`.venv`**, installs dependencies there, and restarts itself — you only need to run **`python3 main.py`** once `python3-venv` is installed.
 
 **When the repo is public**, copy-paste:
 
@@ -68,17 +68,16 @@ unzip -q -o hwtw.zip
 cd HWTW-main
 sudo apt update
 sudo apt install -y python3 python3-pip python3-venv python3-tk
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python main.py
+python3 main.py
 ```
+
+If setup says **`venv` failed**, ensure **`python3-venv`** is installed (`sudo apt install python3-venv`). You can still install by hand: `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt && .venv/bin/python main.py`.
 
 If `wget` still says **404**, the project is not public at that URL yet — follow **Make the GitHub repo public** above, or temporarily use **Code → Download ZIP** in the browser once the repo is visible.
 
 **Fork or different repo name?** Replace `ta10101/HWTW` in the `wget` URL and `cd` into the folder GitHub creates (`YourRepo-main`). **`git clone`** of a public repo does not need a GitHub login unless a school/proxy forces one — then use ZIP from the browser.
 
-**Offline / no GitHub:** zip the project on another machine, copy into **Linux files**, `unzip`, `cd` into the folder, then the same `sudo apt install …`, `venv`, `pip`, `python main.py` block (skip `wget`).
+**Offline / no GitHub:** zip the project on another machine, copy into **Linux files**, `unzip`, `cd` into the folder, then the same `sudo apt install …` and `python3 main.py` as above (skip `wget`).
 
 ## What it does
 

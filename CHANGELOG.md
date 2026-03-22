@@ -5,16 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.2] - 2026-03-22
 
 ### Added
 
-- README: **Chromebook / no Git credentials** — ZIP or `wget` archive + note that public `git clone` needs no GitHub login.
+- **PEP 668 / Chromebook:** on Debian-style “externally managed” Python, the app creates **`.venv`**, runs **`pip install -r requirements.txt`** inside it, then **restarts** with the venv interpreter (no more `externally-managed-environment` on first run).
 
 ### Changed
 
-- README: Chromebook / Debian — **`venv`** for `pip` (PEP 668); explain **404** on `wget` zip (wrong/missing GitHub URL); **copy folder** / Drive zip path.
-- README: **Make the GitHub repo public** (step-by-step); Chromebook block uses canonical URL once public; **Publishing on GitHub** defers to that section.
+- README: **Chromebook** — simplified to `python3 main.py` after installing **`python3-venv`**; note auto-`.venv` from v1.1.2.
 
 ## [1.1.1] - 2025-03-22
 

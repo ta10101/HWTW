@@ -9,7 +9,9 @@ import importlib
 import json
 import os
 import shlex
+import sysconfig
 from collections import deque
+from pathlib import Path
 import subprocess
 import sys
 import threading
@@ -19,7 +21,7 @@ from tkinter import filedialog, messagebox, scrolledtext, ttk
 
 psutil = None  # set in bootstrap_requirements()
 
-__version__ = "1.1.1"
+__version__ = "1.1.2"
 APP_SHORT = "HWTW"
 
 IMAGE = "ghcr.io/holochain/wind-tunnel-runner:latest"
@@ -71,6 +73,195 @@ def save_config(**kwargs) -> None:
 
 def requirements_path() -> str:
     return os.path.join(app_dir(), "requirements.txt")
+
+
+def is_externally_managed() -> bool:
+    """True on Chromebook Linux, Debian 12+, etc. (PEP 668); system pip install is blocked."""
+    try:
+        stdlib = Path(sysconfig.get_path("stdlib"))
+        return (stdlib / "EXTERNALLY-MANAGED").is_file()
+    except Exception:
+        return False
+
+
+def _venv_python(venv_dir: str) -> str | None:
+    if sys.platform == "win32":
+        for name in ("python.exe", "python3.exe"):
+            p = os.path.join(venv_dir, "Scripts", name)
+            if os.path.isfile(p):
+                return p
+    else:
+        for name in ("python3", "python"):
+            p = os.path.join(venv_dir, "bin", name)
+            if os.path.isfile(p):
+                return p
+    return None
+
+
+def _venv_can_import(py_exe: str, module: str = "psutil") -> bool:
+    code, _, _ = run_cmd([py_exe, "-c", f"import {module}"], timeout=60)
+    return code == 0
+
+
+def _bootstrap_via_project_venv(parent: tk.Misc | None, req: str) -> bool:
+    """Create .venv, pip install there, re-exec this app with the venv interpreter (PEP 668)."""
+    app_root = app_dir()
+    venv_dir = os.path.join(app_root, ".venv")
+    main_py = os.path.join(app_root, "main.py")
+    venv_py = _venv_python(venv_dir)
+
+    if venv_py and _venv_can_import(venv_py):
+        try:
+            os.execv(venv_py, [venv_py, main_py, *sys.argv[1:]])
+        except OSError as e:
+            messagebox.showerror(
+                "Could not start virtual environment",
+                f"{e}\n\nIn a terminal:\n  cd {shlex.quote(app_root)}\n"
+                f'  {shlex.quote(venv_py)} {shlex.quote("main.py")}',
+                parent=parent,
+            )
+        return False
+
+    splash = None
+    if parent is not None:
+        splash = tk.Toplevel(parent)
+        splash.title("Setup")
+        splash.resizable(False, False)
+
+    def splash_msg(text: str) -> None:
+        if not splash:
+            return
+        for w in splash.winfo_children():
+            w.destroy()
+        ttk.Label(splash, text=text, padding=20).pack()
+        splash.update()
+
+    if splash:
+        splash_msg(
+            "Linux uses a protected system Python.\n"
+            "Creating a project virtual environment (.venv)…"
+        )
+
+    if not venv_py:
+        try:
+            cr = subprocess.run(
+                [sys.executable, "-m", "venv", venv_dir],
+                capture_output=True,
+                text=True,
+                timeout=120,
+            )
+        except Exception as e:
+            if splash:
+                try:
+                    splash.destroy()
+                except tk.TclError:
+                    pass
+            messagebox.showerror(
+                "Could not create .venv",
+                f"{e}\n\nIn the project folder, run:\n"
+                f"  python3 -m venv .venv\n"
+                f'  .venv/bin/pip install -r requirements.txt\n'
+                f"  .venv/bin/python main.py",
+                parent=parent,
+            )
+            return False
+        if cr.returncode != 0:
+            if splash:
+                try:
+                    splash.destroy()
+                except tk.TclError:
+                    pass
+            blob = ((cr.stdout or "") + (cr.stderr or ""))[:1500]
+            messagebox.showerror(
+                "Could not create .venv",
+                f"python -m venv failed:\n\n{blob}",
+                parent=parent,
+            )
+            return False
+        venv_py = _venv_python(venv_dir)
+        if not venv_py:
+            if splash:
+                try:
+                    splash.destroy()
+                except tk.TclError:
+                    pass
+            messagebox.showerror(
+                "Virtual environment incomplete",
+                f"Expected Python under:\n{venv_dir}",
+                parent=parent,
+            )
+            return False
+
+    if _venv_can_import(venv_py):
+        if splash:
+            try:
+                splash.destroy()
+            except tk.TclError:
+                pass
+        try:
+            os.execv(venv_py, [venv_py, main_py, *sys.argv[1:]])
+        except OSError as e:
+            messagebox.showerror(
+                "Could not start virtual environment",
+                str(e),
+                parent=parent,
+            )
+        return False
+
+    if splash:
+        splash_msg("Installing packages into .venv (first run)…\nThis may take a minute.")
+
+    try:
+        pr = subprocess.run(
+            [
+                venv_py,
+                "-m",
+                "pip",
+                "install",
+                "--disable-pip-version-check",
+                "-r",
+                req,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=600,
+        )
+    except Exception as e:
+        if splash:
+            try:
+                splash.destroy()
+            except tk.TclError:
+                pass
+        messagebox.showerror("pip failed", str(e), parent=parent)
+        return False
+
+    if splash:
+        try:
+            splash.destroy()
+        except tk.TclError:
+            pass
+
+    if pr.returncode != 0:
+        blob = ((pr.stdout or "") + (pr.stderr or ""))[:1500]
+        messagebox.showerror(
+            "Dependency install failed",
+            "pip could not install packages into .venv.\n\n" + blob,
+            parent=parent,
+        )
+        return False
+
+    try:
+        os.execv(venv_py, [venv_py, main_py, *sys.argv[1:]])
+    except OSError as e:
+        messagebox.showinfo(
+            "Dependencies installed",
+            f"Installed into .venv. Start the app with:\n\n"
+            f'  cd {app_root}\n'
+            f'  "{venv_py}" main.py\n\n'
+            f"Error was: {e}",
+            parent=parent,
+        )
+    return False
 
 
 def setup_marker_path() -> str:
@@ -141,12 +332,12 @@ def _load_psutil():
 
 def bootstrap_requirements(parent: tk.Misc | None, *, force_install: bool = False) -> bool:
     global psutil
-    if not force_install:
-        try:
-            psutil = importlib.import_module("psutil")
-            return True
-        except ImportError:
-            pass
+    _ = force_install  # callers pass first-run flag; satisfied imports skip redundant pip
+    try:
+        psutil = importlib.import_module("psutil")
+        return True
+    except ImportError:
+        pass
 
     if is_frozen():
         _load_psutil()
@@ -168,6 +359,9 @@ def bootstrap_requirements(parent: tk.Misc | None, *, force_install: bool = Fals
         )
         _load_psutil()
         return psutil is not None
+
+    if is_externally_managed():
+        return _bootstrap_via_project_venv(parent, req)
 
     splash = None
     if parent is not None:
