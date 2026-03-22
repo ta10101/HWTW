@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **Release CI:** GitHub rejected **`.github/workflows/release.yml`** because **`secrets.*` was used in a step `env:` map** (macOS DMG name step). That prevented **any** v1.2.x tag from publishing a release, so [Releases](https://github.com/ta10101/HWTW/releases) stayed on **v1.1.1**. The condition now runs inside **`run:`** via a `${{ }}` expression; **`workflow_dispatch`** can rebuild an existing tag after pushing this fix.
+- **Release CI:** GitHub’s workflow parser rejects **`secrets` in `if:`** and in **`${{ }}` inside `run:`** (only direct **`env:` / `with:`** assignments like **`${{ secrets.NAME }}`** are valid). Earlier we also hit **`secrets` inside `env:` for a boolean**. macOS signing steps now branch in the shell on **`[ -n "$P12_BASE64" ]`** with **`P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12 }}`** on the step. **`workflow_dispatch`** can rebuild an existing tag after pushing this fix.
 
 ### Changed
 

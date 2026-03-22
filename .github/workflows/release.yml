@@ -166,22 +166,28 @@ jobs:
             --hidden-import=psutil \
             main.py
 
-      # secrets.* is not allowed in step env:; use a run-time expression (evaluated before the shell runs).
+      # secrets cannot be used in `if:` or in `${{ }}` inside `run:` — only as direct env/with values.
+      # Branch in the shell on whether the secret-backed env var is non-empty.
       - name: Choose DMG base name
         id: names
+        env:
+          P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12 }}
         run: |
-          if [ "${{ secrets.MACOS_CERTIFICATE_P12 != '' }}" = "true" ]; then
+          if [ -n "$P12_BASE64" ]; then
             echo "dmg=HWTW-macOS.dmg" >> "$GITHUB_OUTPUT"
           else
             echo "dmg=HWTW-macOS-unsigned.dmg" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Import Apple signing certificate
-        if: ${{ secrets.MACOS_CERTIFICATE_P12 != '' }}
         env:
           P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12 }}
           P12_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
         run: |
+          if [ -z "$P12_BASE64" ]; then
+            echo "No MACOS_CERTIFICATE_P12 secret; skipping keychain import"
+            exit 0
+          fi
           echo "$P12_BASE64" | base64 --decode > /tmp/cert.p12
           security create-keychain -p actions build.keychain
           security default-keychain -s build.keychain
