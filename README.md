@@ -12,6 +12,46 @@ Desktop GUI for setting up a **Holo Edge Node** as a [Holochain Wind Tunnel](htt
 4. Open **HWTW** → stay on **“Easy start”**: green boxes = good, bars show CPU/RAM/disk, then **Download Wind Tunnel image** → **Start Wind Tunnel**.
 5. If something fails, click **“Why isn’t it working?”** or use **Help** in the menu.
 
+## For non-technical users (Linux — Chromebook, Ubuntu, Debian)
+
+You need **Linux** turned on (Chromebook: **Settings → Linux**). Then pick **one** path:
+
+### A) Simplest: download + install in one go
+
+Open the **Linux terminal** and paste (**one line**):
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/ta10101/HWTW/main/fetch-hwtw-linux.sh)
+```
+
+If `curl` is missing, use:
+
+```bash
+wget -qO- https://raw.githubusercontent.com/ta10101/HWTW/main/fetch-hwtw-linux.sh | bash
+```
+
+The script puts the app in **`~/HWTW-main`**, installs Python pieces, and starts HWTW. Your Linux password may be asked once or twice (normal).
+
+Next time, start HWTW with:
+
+```bash
+cd ~/HWTW-main && ./run-hwtw-linux.sh
+```
+
+(or look for **HWTW** in the Linux apps list after install).
+
+### B) You already have the folder (zip or git clone)
+
+```bash
+cd ~/HWTW-main
+bash install-linux.sh
+./run-hwtw-linux.sh
+```
+
+`install-linux.sh` installs apt packages, builds **`.venv`**, installs Python libraries, and adds a desktop entry. **`run-hwtw-linux.sh`** starts the app without touching system Python.
+
+**Docker** is still separate: install/start Docker if you want Wind Tunnel containers to run.
+
 ## Requirements
 
 - **Python** 3.10 or newer (includes Tkinter on most installers).
@@ -55,27 +95,24 @@ The links in this README use **`https://github.com/ta10101/HWTW`**. A **404** in
 
 After that, **Releases**, **Download ZIP**, and Chromebook `wget` below all work without a GitHub password for **read-only** access.
 
-### Chromebook / Debian Linux (no Git password)
+### Chromebook / Debian Linux (manual / advanced)
 
-**`pip install` into system Python is blocked** on Chromebook Linux (PEP 668). **HWTW v1.1.3+** always uses a project **`.venv`** on Linux, installs dependencies there, and restarts itself — run **`python3 main.py`** from the folder that contains `main.py` (e.g. `cd ~/HWTW-main` or `cd ~/HWTW`). Install **`python3-venv`** (and **`python3-full`** if `venv` errors).
+Prefer **[For non-technical users (Linux)](#for-non-technical-users-linux--chromebook-ubuntu-debian)** (`fetch-hwtw-linux.sh` or `install-linux.sh`) first.
 
-**When the repo is public**, copy-paste:
+**`pip install` into system Python is blocked** on many Linux systems (PEP 668). The **`install-linux.sh`** / **`run-hwtw-linux.sh`** flow always uses a **`.venv`**. You can also run **`python3 main.py`** from the project folder: **v1.1.3+** of the app will create **`.venv`** and restart itself when needed.
+
+**When the repo is public**, manual zip path:
 
 ```bash
 cd ~
 wget -O hwtw.zip https://github.com/ta10101/HWTW/archive/refs/heads/main.zip
 unzip -q -o hwtw.zip
 cd HWTW-main
-sudo apt update
-sudo apt install -y python3 python3-pip python3-venv python3-full python3-tk
-python3 main.py
+bash install-linux.sh
+./run-hwtw-linux.sh
 ```
 
-**Important:** run `python3 main.py` **inside** the project directory (`cd` into `HWTW-main` or `HWTW` first). Running it from `~` causes `can't open file '.../main.py'`.
-
-If **`venv` fails**, run `sudo apt install python3-venv python3-full`. Manual install: `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt && .venv/bin/python main.py`.
-
-If `wget` still says **404**, the project is not public at that URL yet — follow **Make the GitHub repo public** above, or temporarily use **Code → Download ZIP** in the browser once the repo is visible.
+If `wget` says **404**, the repo is not public at that URL — see **Make the GitHub repo public** above.
 
 **Fork or different repo name?** Replace `ta10101/HWTW` in the `wget` URL and `cd` into the folder GitHub creates (`YourRepo-main`). **`git clone`** of a public repo does not need a GitHub login unless a school/proxy forces one — then use ZIP from the browser.
 

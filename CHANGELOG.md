@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Linux easy install:** `install-linux.sh` (apt + clean `.venv` + pip + optional desktop entry), `run-hwtw-linux.sh` launcher, `fetch-hwtw-linux.sh` one-step download from GitHub into `~/HWTW-main`. README section for non-technical Linux users (curl/wget one-liners).
+
 ### Security
 
 - GitHub Actions: default **`permissions: contents: read`**, **concurrency** to cancel stale CI, **`persist-credentials: false`** on checkout; release job alone gets **`contents: write`**.
