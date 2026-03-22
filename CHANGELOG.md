@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Release CI:** GitHub rejected **`.github/workflows/release.yml`** because **`secrets.*` was used in a step `env:` map** (macOS DMG name step). That prevented **any** v1.2.x tag from publishing a release, so [Releases](https://github.com/ta10101/HWTW/releases) stayed on **v1.1.1**. The condition now runs inside **`run:`** via a `${{ }}` expression; **`workflow_dispatch`** can rebuild an existing tag after pushing this fix.
+
 ### Changed
 
 - **Releases:** Windows publish step sets **`make_latest: true`** and prepends a **download table** to release notes; README / INSTALL document **`/releases/latest/download/...`** links for **`HWTW.exe`**, **`HWTW.msi`**, **`SHA256SUMS.txt`**, and **`requirements.txt`**.

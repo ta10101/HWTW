@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to build and publish (e.g. v1.2.8)"
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -15,9 +21,24 @@ jobs:
       contents: write
     runs-on: windows-latest
     steps:
+      - name: Resolve release tag and ref
+        id: meta
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            T="${{ github.event.inputs.tag }}"
+            T="${T#refs/tags/}"
+            echo "tag=$T" >> "$GITHUB_OUTPUT"
+            echo "ref=refs/tags/$T" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+            echo "ref=$GITHUB_REF" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Checkout
         uses: actions/checkout@v6
         with:
+          ref: ${{ steps.meta.outputs.ref }}
           persist-credentials: false
 
       - name: Set up Python
@@ -50,7 +71,7 @@ jobs:
       - name: Build HWTW.msi
         shell: pwsh
         run: |
-          $tag = "${{ github.ref_name }}"
+          $tag = "${{ steps.meta.outputs.tag }}"
           $v = $tag.TrimStart('v')
           $parts = @($v.Split('.'))
           while ($parts.Count -lt 3) { $parts += '0' }
@@ -75,6 +96,7 @@ jobs:
       - name: Create GitHub Release (Windows)
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.meta.outputs.tag }}
           draft: false
           prerelease: false
           make_latest: true
@@ -104,9 +126,23 @@ jobs:
       contents: write
     runs-on: macos-latest
     steps:
+      - name: Resolve release tag and ref
+        id: meta
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            T="${{ github.event.inputs.tag }}"
+            T="${T#refs/tags/}"
+            echo "tag=$T" >> "$GITHUB_OUTPUT"
+            echo "ref=refs/tags/$T" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+            echo "ref=$GITHUB_REF" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Checkout
         uses: actions/checkout@v6
         with:
+          ref: ${{ steps.meta.outputs.ref }}
           persist-credentials: false
 
       - name: Set up Python
@@ -130,12 +166,11 @@ jobs:
             --hidden-import=psutil \
             main.py
 
+      # secrets.* is not allowed in step env:; use a run-time expression (evaluated before the shell runs).
       - name: Choose DMG base name
         id: names
-        env:
-          HAS_P12: ${{ secrets.MACOS_CERTIFICATE_P12 != '' }}
         run: |
-          if [ "$HAS_P12" = "true" ]; then
+          if [ "${{ secrets.MACOS_CERTIFICATE_P12 != '' }}" = "true" ]; then
             echo "dmg=HWTW-macOS.dmg" >> "$GITHUB_OUTPUT"
           else
             echo "dmg=HWTW-macOS-unsigned.dmg" >> "$GITHUB_OUTPUT"
@@ -167,7 +202,8 @@ jobs:
       - name: Package version for .pkg
         id: pkgver
         run: |
-          V="${GITHUB_REF_NAME#v}"
+          V="${{ steps.meta.outputs.tag }}"
+          V="${V#v}"
           V="${V%%-*}"
           a=0; b=0; c=0
           IFS=. read -r a b c <<<"$V"
@@ -183,6 +219,7 @@ jobs:
       - name: Attach macOS assets to release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.meta.outputs.tag }}
           generate_release_notes: false
           files: |
             dist/${{ steps.names.outputs.dmg }}

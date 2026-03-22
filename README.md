@@ -29,6 +29,8 @@ These links follow GitHub’s **Latest** release ([open release page](https://gi
 
 **macOS** filenames vary (**`HWTW-macOS.dmg`** vs **`HWTW-macOS-unsigned.dmg`**, plus **`.app.zip`**, **`.pkg`**, **`SHA256SUMS-macos.txt`**) — use **[Latest → Assets](https://github.com/ta10101/HWTW/releases/latest)** on the release page.
 
+If **Latest** still points at an old version while newer **tags** exist on the repo, the **Release** workflow likely failed — open **[Actions → Release](https://github.com/ta10101/HWTW/actions/workflows/release.yml)**; after fixing CI, use **Run workflow** (pick tag **e.g. `v1.2.8`**) or push a new **`v*`** tag.
+
 **Official downloads:** Use **`ta10101/HWTW`** only. Verify Windows files with **`SHA256SUMS.txt`** and macOS with **`SHA256SUMS-macos.txt`**.
 
 **One-page install only:** **[INSTALL.md](INSTALL.md)** (Windows, macOS, Linux — easy to print or share).
