@@ -248,15 +248,22 @@ jobs:
       - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pyinstaller psutil "sv-ttk>=2.6.0"
+          # Pillow: PyInstaller on macOS converts .ico → .icns during build; without it, --icon *.ico often fails.
+          python -m pip install pyinstaller psutil pillow "sv-ttk>=2.6.0"
 
+      # Absolute --icon: same specpath/cwd pitfall as Windows; align flags with windows-exe where it matters.
       - name: Build HWTW.app (PyInstaller)
         run: |
+          set -eux
+          ICON="${GITHUB_WORKSPACE}/packaging/icons/HWTW.ico"
+          test -f "$ICON"
           pyinstaller --windowed --name HWTW \
-            --icon packaging/icons/HWTW.ico \
+            --icon "$ICON" \
             --osx-bundle-identifier io.github.ta10101.HWTW \
             --collect-all sv_ttk --collect-all psutil \
+            --collect-submodules psutil \
             --hidden-import=psutil \
+            --hidden-import=psutil._psosx \
             main.py
 
       # secrets cannot be used in `if:` or in `${{ }}` inside `run:` — only as direct env/with values.
