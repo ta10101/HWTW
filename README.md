@@ -21,15 +21,22 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-On the **first run**, the app installs dependencies from `requirements.txt`, may offer **Docker** and **WSL** setup on Windows, and creates a local marker file `.wind_tunnel_gui_setup_done` (ignored by git).
+On the **first run**, the app installs dependencies from `requirements.txt`, may offer **Docker** and **WSL** setup on Windows, and creates a local marker file `.wind_tunnel_gui_setup_done` (ignored by git). If you already ran an older version, run `python -m pip install -r requirements.txt` once to pick up **sv-ttk** (dark theme).
 
 ## What it does
 
 - Prep: `docker stop edgenode` / `docker rm edgenode` (optional).
 - `docker pull ghcr.io/holochain/wind-tunnel-runner:latest`
 - `docker run` with `--hostname`, `--cgroupns=host`, `--net=host`, `--privileged`, `-d`, `--rm` as in the guide.
-- Stop runner containers for that image; refresh `docker ps`.
-- Status: PC hostname, CPU/RAM/disk (`psutil`), Docker availability, scrollable logs.
+- Stop runner containers for that image; refresh **filtered** runner `docker ps` and full `docker ps -a`.
+- **Preflight:** Docker daemon, WSL 2 (Windows), RAM/disk vs Holo guide minimums (8 GiB RAM, 10 GiB free disk).
+- Saves **hostname**, optional **dark theme**, and log tail in `hwtw_config.json` (next to the app; git-ignored).
+- Timestamped command log with **clear** / **save to .txt**; **copy** full `docker run` line; **docker logs** tail for the running runner.
+- **View → Dark theme** ([sv-ttk](https://github.com/rdbende/Sun-Valley-ttk-theme)); window title shows **HWTW** + version.
+
+## Windows release binary (CI)
+
+Pushing a **version tag** `v*` (e.g. `v1.0.1`) builds **HWTW.exe** with PyInstaller and uploads **`HWTW.exe`** plus **`requirements.txt`** to a GitHub Release (workflow: `.github/workflows/release.yml`). Keep **`requirements.txt`** beside the `.exe` so first-run `pip install` can find it.
 
 ## Publishing on GitHub
 
@@ -49,27 +56,25 @@ On the **first run**, the app installs dependencies from `requirements.txt`, may
 
 ## Creating a release
 
-1. Update **version references** if you add them (e.g. in `CHANGELOG.md`).
-2. Commit and push:
+1. Bump **`__version__`** in `main.py` and note changes in **`CHANGELOG.md`**, then commit and push to `main`.
+2. Tag and push (starts the **Release** workflow and uploads `HWTW.exe` + `requirements.txt`):
 
    ```bash
-   git tag -a v1.0.0 -m "Release v1.0.0"
-   git push origin main --tags
+   git tag -a v1.0.1 -m "Release v1.0.1"
+   git push origin v1.0.1
    ```
 
-3. On GitHub: **Releases → Create a new release**, choose tag `v1.0.0`, title `v1.0.0`, paste notes from `CHANGELOG.md`.
-4. **Source archives** (zip/tar.gz) are generated automatically. Optionally attach a **Windows executable** (see below).
+3. On GitHub, open **Releases** — the workflow creates the release and attaches the binaries. Edit the release notes if you want.
 
-### Optional: one-file executable (Windows)
-
-Requires [PyInstaller](https://pyinstaller.org/) and a full Python environment on the build machine:
+### Local PyInstaller build (optional)
 
 ```bash
-python -m pip install pyinstaller
-pyinstaller --onefile --windowed --name holo-wind-tunnel-gui main.py
+python -m pip install pyinstaller "sv-ttk>=2.6.0"
+pyinstaller --onefile --windowed --name HWTW --collect-all sv_ttk main.py
+copy requirements.txt dist\
 ```
 
-Copy `requirements.txt` next to the built `.exe` if you rely on first-run `pip install` from the frozen app layout. Test the binary on a clean machine before attaching it to a release.
+Ship **`dist/HWTW.exe`** and **`dist/requirements.txt`** together.
 
 ## CI
 
