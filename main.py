@@ -24,11 +24,16 @@ from tkinter import filedialog, messagebox, scrolledtext, ttk
 
 psutil = None  # set in bootstrap_requirements()
 
-__version__ = "1.2.5"
+__version__ = "1.2.6"
 APP_SHORT = "HWTW"
 
 # Shown once per version after upgrade (see _show_version_news_if_needed).
 WHATS_NEW_BY_VERSION: dict[str, str] = {
+    "1.2.6": (
+        "• **GitHub Releases:** Windows **`HWTW.exe`** is published **first** so you always get a build even if the macOS job fails.\n"
+        "• **Checksums:** **`SHA256SUMS.txt`** (exe + requirements) and **`SHA256SUMS-macos-dmg.txt`** (DMG) on releases that include Mac.\n"
+        "• **macOS .app build** also bundles **psutil** like Windows."
+    ),
     "1.2.5": (
         "• **Windows .exe:** PyInstaller now bundles **psutil** correctly (`--collect-all psutil`). "
         "If you saw “Missing built-in libraries”, re-download **HWTW.exe** from Releases.\n"

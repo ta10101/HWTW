@@ -16,7 +16,7 @@ Desktop app for setting up a **Holo Edge Node** as a [Holochain Wind Tunnel](htt
 
 **Everyone:** Wind Tunnel needs **Docker** running. HWTW only drives Docker — it does not replace Docker.
 
-**Official downloads:** Get **`HWTW.exe`**, the macOS **`.dmg`**, and **`requirements.txt`** only from **[GitHub Releases](https://github.com/ta10101/HWTW/releases)** for this repository (`ta10101/HWTW`). Verify builds using **`SHA256SUMS.txt`** on each release when provided.
+**Official downloads:** Get **`HWTW.exe`**, the macOS **`.dmg`**, and **`requirements.txt`** only from **[GitHub Releases](https://github.com/ta10101/HWTW/releases)** for this repository (`ta10101/HWTW`). Verify **`HWTW.exe`** with **`SHA256SUMS.txt`**; the DMG hash is in **`SHA256SUMS-macos-dmg.txt`** when a Mac build is attached.
 
 **One-page install only:** **[INSTALL.md](INSTALL.md)** (Windows, macOS, Linux — easy to print or share).
 
@@ -296,7 +296,7 @@ The links in this README use **`https://github.com/ta10101/HWTW`**. A **404** fr
 
 ## Release binaries (CI)
 
-Pushing a **version tag** `v*` builds **Windows** (**`HWTW.exe`**, **`requirements.txt`**) and **macOS** (**`HWTW-macOS.dmg`** or **`HWTW-macOS-unsigned.dmg`** — see [MACOS_SIGNING.md](MACOS_SIGNING.md)), then publishes **one GitHub Release** with those files plus **`SHA256SUMS.txt`** (SHA-256 of each binary) for verification. **Linux** still uses the install scripts or **`python3 main.py`** from this repo.
+Pushing a **version tag** `v*` builds **Windows** (**`HWTW.exe`**, **`requirements.txt`**, **`SHA256SUMS.txt`**) into a **GitHub Release** first, then **macOS** attaches the **`.dmg`** and **`SHA256SUMS-macos-dmg.txt`** (see [MACOS_SIGNING.md](MACOS_SIGNING.md)). **Linux** still uses the install scripts or **`python3 main.py`** from this repo.
 
 ## Publishing on GitHub
 

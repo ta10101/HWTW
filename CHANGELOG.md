@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.6] - 2026-03-22
+
+### Fixed
+
+- **Release workflow:** **Windows** job creates the **GitHub Release** and uploads **`HWTW.exe`**, **`requirements.txt`**, and **`SHA256SUMS.txt`** immediately; **macOS** runs **after** and **attaches** the **`.dmg`** plus **`SHA256SUMS-macos-dmg.txt`**. If macOS fails, Windows assets are still published (fixes “tag exists but no **HWTW.exe** / not Latest”).
+- **macOS PyInstaller:** **`--collect-all psutil`** / **`--hidden-import=psutil`** for parity with Windows.
+
 ## [1.2.5] - 2026-03-22
 
 ### Fixed

@@ -9,7 +9,10 @@ permissions:
   contents: read
 
 jobs:
+  # Publish Windows first so HWTW.exe + SHA256SUMS always ship even if macOS fails later.
   windows-exe:
+    permissions:
+      contents: write
     runs-on: windows-latest
     steps:
       - name: Checkout
@@ -27,7 +30,6 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pyinstaller psutil "sv-ttk>=2.6.0"
 
-      # psutil uses native extensions; --collect-all ensures .pyd files ship (importlib hooks often miss them).
       - name: Build executable
         run: >
           pyinstaller --onefile --windowed --name HWTW
@@ -38,15 +40,23 @@ jobs:
       - name: Copy requirements for sidecar install
         run: copy requirements.txt dist\
 
-      - name: Upload Windows build artifact
-        uses: actions/upload-artifact@v4
+      - name: Write SHA256SUMS.txt (Windows assets)
+        run: |
+          python -c "import hashlib, pathlib; d=pathlib.Path('dist'); g=lambda n: hashlib.sha256(d.joinpath(n).read_bytes()).hexdigest(); t='\n'.join([g('HWTW.exe')+'  HWTW.exe', g('requirements.txt')+'  requirements.txt'])+'\n'; d.joinpath('SHA256SUMS.txt').write_text(t, encoding='utf-8'); print(t)"
+
+      - name: Create GitHub Release (Windows)
+        uses: softprops/action-gh-release@v2
         with:
-          name: hwtw-windows
-          path: |
+          generate_release_notes: true
+          files: |
             dist/HWTW.exe
             dist/requirements.txt
+            dist/SHA256SUMS.txt
 
   macos-dmg:
+    needs: [windows-exe]
+    permissions:
+      contents: write
     runs-on: macos-latest
     steps:
       - name: Checkout
@@ -71,7 +81,8 @@ jobs:
         run: |
           pyinstaller --windowed --name HWTW \
             --osx-bundle-identifier io.github.ta10101.HWTW \
-            --collect-all sv_ttk \
+            --collect-all sv_ttk --collect-all psutil \
+            --hidden-import=psutil \
             main.py
 
       - name: Choose DMG base name
@@ -108,41 +119,19 @@ jobs:
           DMG_NAME: ${{ steps.names.outputs.dmg }}
         run: bash packaging/build-macos-dmg.sh
 
-      - name: Upload macOS DMG artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: hwtw-macos
-          path: dist/${{ steps.names.outputs.dmg }}
-
-  publish-release:
-    needs: [windows-exe, macos-dmg]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Download Windows assets
-        uses: actions/download-artifact@v4
-        with:
-          name: hwtw-windows
-          path: publish
-
-      - name: Download macOS DMG
-        uses: actions/download-artifact@v4
-        with:
-          name: hwtw-macos
-          path: publish
-
-      - name: SHA256 checksums
+      - name: DMG checksum
+        env:
+          DMG_NAME: ${{ steps.names.outputs.dmg }}
         run: |
-          cd publish
-          ls -la
-          sha256sum HWTW.exe requirements.txt *.dmg > SHA256SUMS.txt
-          echo "--- SHA256SUMS.txt ---"
-          cat SHA256SUMS.txt
+          cd dist
+          HASH=$(shasum -a 256 "$DMG_NAME" | awk '{print $1}')
+          echo "$HASH  $(basename "$DMG_NAME")" > SHA256SUMS-macos-dmg.txt
+          cat SHA256SUMS-macos-dmg.txt
 
-      # Single glob: publish/ holds exe, requirements.txt, one .dmg, SHA256SUMS.txt
-      - name: Create GitHub Release
+      - name: Attach macOS assets to release
         uses: softprops/action-gh-release@v2
         with:
-          generate_release_notes: true
-          files: publish/*
+          generate_release_notes: false
+          files: |
+            dist/${{ steps.names.outputs.dmg }}
+            dist/SHA256SUMS-macos-dmg.txt
