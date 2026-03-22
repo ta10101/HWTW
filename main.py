@@ -29,11 +29,14 @@ psutil = None  # set in bootstrap_requirements()
 _SINGLE_INSTANCE_MUTEX: object | None = None
 _SINGLE_INSTANCE_LOCK_FD: int | None = None
 
-__version__ = "1.2.19"
+__version__ = "1.3.0"
 APP_SHORT = "HWTW"
 
 # Shown once per version after upgrade (see _show_version_news_if_needed).
 WHATS_NEW_BY_VERSION: dict[str, str] = {
+    "1.3.0": (
+        "• **Releases & downloads:** Prefer **[Latest](https://github.com/ta10101/HWTW/releases/latest)** for **`HWTW.exe`**, **`HWTW.msi`**, and **macOS** artifacts. This minor ships **MSI same-version reinstall** (**`AllowSameVersionUpgrades`**), **CI** fixes (**WiX**, **macOS** **PyInstaller** + icon), **Windows** Docker/WSL checks without console flash, and clearer **GitHub** download tables (**tag-pinned** + **Latest**)."
+    ),
     "1.2.19": (
         "• **Windows MSI:** Desktop shortcut feature uses **`CommonDesktopFolder`** (WiX 3) — fixes **LGHT0094** from invalid **`PublicDesktopFolder`**."
     ),

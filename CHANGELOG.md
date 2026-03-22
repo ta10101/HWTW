@@ -7,12 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-03-23
+
+### Added
+
+- **Workflow [Set release as Latest](https://github.com/ta10101/HWTW/actions/workflows/set-latest-release.yml):** manual **`workflow_dispatch`** to set **GitHub Latest** when it lags a green **Release** run.
+
 ### Changed
 
-- **Windows MSI (WiX):** **`MajorUpgrade`** sets **`AllowSameVersionUpgrades="yes"`** so reinstalling an MSI with the **same** product version (e.g. a rebuilt **Latest** build) is allowed; clearer **downgrade** message points users to **Uninstall** when the installed copy is **newer** than the MSI.
-- **README / INSTALL:** **macOS** rows now use **`/releases/latest/download/...`** for **`.dmg`** (unsigned + signed), **`.app.zip`**, **`.pkg`**, and **`SHA256SUMS-macos.txt`**; note **Set release as Latest** when **Latest** lags CI.
-- **Release draft notes:** Download table uses **tag-pinned** `releases/download/<tag>/...` URLs for **Windows + macOS** assets so each release page lists the **exact files** for that build; still explains **`/latest/download/`** after publish.
-- **README:** Windows MSI bullet aligned with **INSTALL.md** (icon **v1.2.13+**, uninstall shortcut **v1.2.14+**).
+- **Windows MSI (WiX):** **`MajorUpgrade`** sets **`AllowSameVersionUpgrades="yes"`** so reinstalling an MSI with the **same** product version is allowed; clearer **downgrade** message references **Settings → Apps** / **Uninstall HWTW**.
+- **GitHub Release pipeline:** **`publish-release`** uses REST **PATCH** (**`draft=false`**, **`make_latest=true`**); **immutable** / re-run handling (**`overwrite_files: false`**, prune **draft** for tag); **macOS** job installs **Pillow**, uses absolute **`--icon`**, **`--collect-submodules psutil`**, **`psutil._psosx`**; **Windows** job fetches **HWTW.ico** / **License.rtf** from **`main`** when missing on old tags.
+- **Release draft notes:** Download table uses **tag-pinned** `releases/download/<tag>/...` URLs for **Windows + macOS** assets; explains **`/releases/latest/download/...`** after publish.
+- **README / INSTALL:** **macOS** direct **`/releases/latest/download/...`** links; troubleshooting for **Latest** vs **Set release as Latest**.
+
+### Fixed
+
+- **Windows (frozen app):** Docker / WSL / runner status polling avoids flashing consoles (**`CREATE_NO_WINDOW`**) and moves heavy probes off the Tk thread (see **1.2.15**).
+- **Windows MSI (WiX 3):** **`CommonDesktopFolder`**, **`light -dWixUILicenseRtf`**, **`WixVariable` / `Package`** ordering (see **1.2.16–1.2.19**).
 
 ## [1.2.19] - 2026-03-22
 
