@@ -24,11 +24,16 @@ from tkinter import filedialog, messagebox, scrolledtext, ttk
 
 psutil = None  # set in bootstrap_requirements()
 
-__version__ = "1.2.4"
+__version__ = "1.2.5"
 APP_SHORT = "HWTW"
 
 # Shown once per version after upgrade (see _show_version_news_if_needed).
 WHATS_NEW_BY_VERSION: dict[str, str] = {
+    "1.2.5": (
+        "• **Windows .exe:** PyInstaller now bundles **psutil** correctly (`--collect-all psutil`). "
+        "If you saw “Missing built-in libraries”, re-download **HWTW.exe** from Releases.\n"
+        "• Clearer error text if a security app blocks loading."
+    ),
     "1.2.4": (
         "• Easy start: big “Wind Tunnel runner” status line (running or not).\n"
         "• One-time “What’s new” after each upgrade (this dialog).\n"
@@ -455,7 +460,8 @@ def _load_psutil():
     importlib.invalidate_caches()
     try:
         psutil = importlib.import_module("psutil")
-    except ImportError:
+    except (ImportError, OSError):
+        # OSError: native .pyd failed to load (missing from bundle, blocked AV, wrong arch).
         psutil = None  # type: ignore
 
 
@@ -465,7 +471,7 @@ def bootstrap_requirements(parent: tk.Misc | None, *, force_install: bool = Fals
     try:
         psutil = importlib.import_module("psutil")
         return True
-    except ImportError:
+    except (ImportError, OSError):
         pass
 
     if is_frozen():
@@ -473,8 +479,12 @@ def bootstrap_requirements(parent: tk.Misc | None, *, force_install: bool = Fals
         if psutil is None:
             messagebox.showerror(
                 "Missing built-in libraries",
-                "This build should include psutil but it failed to load.\n"
-                "Re-download HWTW.exe from the project releases page.",
+                "This build should include psutil but it failed to load.\n\n"
+                "• Download the latest **HWTW.exe** from:\n"
+                "  https://github.com/ta10101/HWTW/releases\n"
+                "  (avoid very old releases — they may not bundle psutil correctly.)\n\n"
+                "• If you already use the latest build: Windows Security may be blocking a "
+                "component — try “Allow on device” or an exclusion for HWTW.exe.",
                 parent=parent,
             )
         return psutil is not None

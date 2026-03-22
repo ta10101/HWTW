@@ -27,8 +27,13 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pyinstaller psutil "sv-ttk>=2.6.0"
 
+      # psutil uses native extensions; --collect-all ensures .pyd files ship (importlib hooks often miss them).
       - name: Build executable
-        run: pyinstaller --onefile --windowed --name HWTW --collect-all sv_ttk main.py
+        run: >
+          pyinstaller --onefile --windowed --name HWTW
+          --collect-all sv_ttk --collect-all psutil
+          --hidden-import=psutil
+          main.py
 
       - name: Copy requirements for sidecar install
         run: copy requirements.txt dist\

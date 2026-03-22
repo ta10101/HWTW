@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.5] - 2026-03-22
+
+### Fixed
+
+- **Windows release binary:** PyInstaller build now uses **`--collect-all psutil`** and **`--hidden-import=psutil`** so **`psutil`** native modules ship inside **`HWTW.exe`** (fixes “Missing built-in libraries / psutil failed to load” on fresh downloads).
+- **`_load_psutil`:** treat **`OSError`** from broken/native load like a missing dependency.
+- **Frozen error dialog:** points to current **Releases** URL, warns about old builds and Windows Security blocks.
+
 ## [1.2.4] - 2026-03-22
 
 ### Added

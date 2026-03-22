@@ -321,8 +321,8 @@ git push -u origin main
 ### Local PyInstaller build (optional)
 
 ```bash
-python -m pip install pyinstaller "sv-ttk>=2.6.0"
-pyinstaller --onefile --windowed --name HWTW --collect-all sv_ttk main.py
+python -m pip install pyinstaller psutil "sv-ttk>=2.6.0"
+pyinstaller --onefile --windowed --name HWTW --collect-all sv_ttk --collect-all psutil --hidden-import=psutil main.py
 copy requirements.txt dist\
 ```
 
