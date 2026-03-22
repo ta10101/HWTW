@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **README:** Windows MSI bullet aligned with **INSTALL.md** (icon **v1.2.13+**, uninstall shortcut **v1.2.14+**).
+
 ## [1.2.14] - 2026-03-22
 
 ### Added
