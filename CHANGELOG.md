@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.13] - 2026-03-22
+
+### Added
+
+- **App icon:** **`packaging/icons/HWTW.ico`** (multi-size from project artwork) for **PyInstaller** (**`--icon`**) on Windows and macOS; **WiX** shortcuts and **ARPPRODUCTICON** (Add/Remove Programs). Source PNG: **`packaging/icons/hwtw_icon_source.png`**.
+
 ## [1.2.12] - 2026-03-22
 
 ### Added

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- WiX 3.x — candle/light + WixUIExtension. Variables: ProductVersion, HwtwExe, ReqTxt -->
+<!-- WiX 3.x — candle/light + WixUIExtension. Variables: ProductVersion, HwtwExe, ReqTxt, IconIco -->
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <WixVariable Id="WixUILicenseRtf" Value="packaging\wix\License.rtf" />
   <Product
@@ -18,6 +18,8 @@
         Comments="Not affiliated with Holo or Holochain Foundation." />
     <MajorUpgrade DowngradeErrorMessage="A newer version of HWTW is already installed." />
     <MediaTemplate EmbedCab="yes" />
+    <Icon Id="IconHWTW" SourceFile="$(var.IconIco)" />
+    <Property Id="ARPPRODUCTICON" Value="IconHWTW" />
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
     <UIRef Id="WixUI_FeatureTree" />
     <Feature
@@ -70,7 +72,8 @@
             Name="HWTW"
             Description="Holo Wind Tunnel GUI"
             Target="[#filHWTWexe]"
-            WorkingDirectory="INSTALLFOLDER" />
+            WorkingDirectory="INSTALLFOLDER"
+            Icon="IconHWTW" />
         <RemoveFolder Id="RemoveHWTWProgramsFolder" On="uninstall" />
         <RegistryValue
             Root="HKLM"
@@ -91,7 +94,8 @@
             Name="HWTW"
             Description="Holo Wind Tunnel GUI"
             Target="[#filHWTWexe]"
-            WorkingDirectory="INSTALLFOLDER" />
+            WorkingDirectory="INSTALLFOLDER"
+            Icon="IconHWTW" />
         <RegistryValue
             Root="HKLM"
             Key="Software\ta10101\HWTW"

@@ -56,6 +56,7 @@ jobs:
       - name: Build executable
         run: >
           pyinstaller --onefile --windowed --name HWTW
+          --icon packaging\icons\HWTW.ico
           --collect-all sv_ttk --collect-all psutil
           --collect-submodules psutil
           --hidden-import=psutil --hidden-import=psutil._pswindows --hidden-import=psutil._psutil_windows
@@ -85,6 +86,7 @@ jobs:
             "-dProductVersion=$msiVer" `
             "-dHwtwExe=dist\HWTW.exe" `
             "-dReqTxt=dist\requirements.txt" `
+            "-dIconIco=packaging\icons\HWTW.ico" `
             -out obj\ `
             packaging\wix\HWTW.wxs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -164,6 +166,7 @@ jobs:
       - name: Build HWTW.app (PyInstaller)
         run: |
           pyinstaller --windowed --name HWTW \
+            --icon packaging/icons/HWTW.ico \
             --osx-bundle-identifier io.github.ta10101.HWTW \
             --collect-all sv_ttk --collect-all psutil \
             --hidden-import=psutil \

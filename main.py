@@ -29,11 +29,14 @@ psutil = None  # set in bootstrap_requirements()
 _SINGLE_INSTANCE_MUTEX: object | None = None
 _SINGLE_INSTANCE_LOCK_FD: int | None = None
 
-__version__ = "1.2.12"
+__version__ = "1.2.13"
 APP_SHORT = "HWTW"
 
 # Shown once per version after upgrade (see _show_version_news_if_needed).
 WHATS_NEW_BY_VERSION: dict[str, str] = {
+    "1.2.13": (
+        "• **Windows / macOS:** New **app icon** (`.exe`, **`.app`**, MSI shortcuts, and **Programs and Features**)."
+    ),
     "1.2.12": (
         "• **Windows MSI:** setup wizard (**WixUI**) with license page and **Custom** setup so you can turn **Desktop shortcut** on or off.\n"
         "• **psutil:** If Windows Security blocks the bundled library, the app still **starts**; CPU/RAM/disk readouts stay limited until you allow the file or re-download."

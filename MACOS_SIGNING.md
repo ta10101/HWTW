@@ -43,8 +43,9 @@ The **Windows** release job uploads **`requirements.txt`** once per release; the
 ```bash
 python3 -m pip install pyinstaller psutil "sv-ttk>=2.6.0"
 pyinstaller --windowed --name HWTW \
+  --icon packaging/icons/HWTW.ico \
   --osx-bundle-identifier io.github.ta10101.HWTW \
-  --collect-all sv_ttk main.py
+  --collect-all sv_ttk --collect-all psutil main.py
 export MACOS_CODESIGN_IDENTITY="Developer ID Application: …"
 export MACOS_NOTARIZE_APPLE_ID="…"
 export MACOS_NOTARIZE_TEAM_ID="…"

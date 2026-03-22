@@ -352,7 +352,7 @@ git push -u origin main
 
 ```bash
 python -m pip install pyinstaller psutil "sv-ttk>=2.6.0"
-pyinstaller --onefile --windowed --name HWTW --collect-all sv_ttk --collect-all psutil --collect-submodules psutil --hidden-import=psutil --hidden-import=psutil._pswindows --hidden-import=psutil._psutil_windows main.py
+pyinstaller --onefile --windowed --name HWTW --icon packaging/icons/HWTW.ico --collect-all sv_ttk --collect-all psutil --collect-submodules psutil --hidden-import=psutil --hidden-import=psutil._pswindows --hidden-import=psutil._psutil_windows main.py
 copy requirements.txt dist\
 ```
 
