@@ -94,6 +94,8 @@ That dialog (e.g. Danish: *Systemadministratoren har angivet systemregler, der f
 
 **SmartScreen** (“Windows protected your PC”) is separate from policy: use **More info → Run anyway** only if you trust the file from **[official Releases](https://github.com/ta10101/HWTW/releases/latest)**.
 
+**Many windows / PC overwhelmed:** The first launch can take a while (SmartScreen, one-time Docker message). **Click `HWTW.exe` once** and wait — opening it again and again starts **one process per click**. **v1.2.10+** allows only **one** running instance; older builds need a single click and patience.
+
 ### Quick checklist (Windows)
 
 - [ ] `HWTW.exe` from **Releases**

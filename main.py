@@ -17,6 +17,7 @@ from collections import deque
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 import tkinter as tk
@@ -24,11 +25,20 @@ from tkinter import filedialog, messagebox, scrolledtext, ttk
 
 psutil = None  # set in bootstrap_requirements()
 
-__version__ = "1.2.9"
+# Windows: named mutex HANDLE (ctypes). Unix: lock file fd. Held until process exit.
+_SINGLE_INSTANCE_MUTEX: object | None = None
+_SINGLE_INSTANCE_LOCK_FD: int | None = None
+
+__version__ = "1.2.10"
 APP_SHORT = "HWTW"
 
 # Shown once per version after upgrade (see _show_version_news_if_needed).
 WHATS_NEW_BY_VERSION: dict[str, str] = {
+    "1.2.10": (
+        "• **Windows / Linux / macOS:** Only **one** copy of HWTW can run at a time. "
+        "If the app seems slow to start (SmartScreen, first-run dialogs), **wait** — "
+        "don’t double‑click **HWTW.exe** many times, or several windows could open."
+    ),
     "1.2.9": (
         "• **GitHub Releases:** CI now supports repos with **immutable releases** (draft → macOS assets → publish) and **`workflow_dispatch`** to rebuild a tag.\n"
         "• **Downloads:** Same app as **1.2.8**; this release republishes assets with the fixed pipeline."
@@ -91,6 +101,75 @@ _DOCKER_CONTAINER_ID_RE = re.compile(r"^[0-9a-f]{12,64}$", re.IGNORECASE)
 def _env_prefers_dark_default() -> bool:
     """If dark_theme is not in config, allow install-wide default via environment."""
     return os.environ.get("HWTW_DEFAULT_DARK", "").strip().lower() in ("1", "true", "yes")
+
+
+def _notify_already_running() -> None:
+    if sys.platform == "win32":
+        import ctypes
+
+        ctypes.windll.user32.MessageBoxW(
+            None,
+            f"{APP_SHORT} is already running.\n\n"
+            "Use the window that is already open, or check the taskbar (Alt+Tab).\n\n"
+            "If the app was slow to appear, wait next time instead of opening it again.",
+            APP_SHORT,
+            0x40,  # MB_ICONINFORMATION
+        )
+    else:
+        print(
+            f"{APP_SHORT}: already running — check for an existing window.",
+            file=sys.stderr,
+        )
+
+
+def _single_instance_acquire() -> bool:
+    """
+    Return True if this process should continue as the main instance.
+    Prevents a burst of windows when users double-click HWTW.exe repeatedly while SmartScreen or setup runs.
+    """
+    global _SINGLE_INSTANCE_MUTEX, _SINGLE_INSTANCE_LOCK_FD
+    if sys.platform == "win32":
+        import ctypes
+        from ctypes import wintypes
+
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.SetLastError(0)
+        kernel32.CreateMutexW.argtypes = (
+            wintypes.LPVOID,
+            wintypes.BOOL,
+            wintypes.LPCWSTR,
+        )
+        kernel32.CreateMutexW.restype = wintypes.HANDLE
+        kernel32.CloseHandle.argtypes = (wintypes.HANDLE,)
+        kernel32.CloseHandle.restype = wintypes.BOOL
+        ERROR_ALREADY_EXISTS = 183
+        name = "Local\\HWTW_GUI_SingleInstance_io_github_ta10101"
+        h = kernel32.CreateMutexW(None, False, name)
+        if not h:
+            return True
+        if kernel32.GetLastError() == ERROR_ALREADY_EXISTS:
+            kernel32.CloseHandle(h)
+            return False
+        _SINGLE_INSTANCE_MUTEX = h  # keep handle open until process exit
+        return True
+
+    import fcntl
+
+    lock_path = os.path.join(tempfile.gettempdir(), f".{APP_SHORT.lower()}-single-instance.lock")
+    try:
+        fd = os.open(lock_path, os.O_CREAT | os.O_RDWR, 0o644)
+    except OSError:
+        return True
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        try:
+            os.close(fd)
+        except OSError:
+            pass
+        return False
+    _SINGLE_INSTANCE_LOCK_FD = fd
+    return True
 
 
 def validate_wind_tunnel_hostname(h: str) -> tuple[bool, str]:
@@ -2100,6 +2179,9 @@ class WindTunnelApp(tk.Tk):
 
 
 def main() -> None:
+    if not _single_instance_acquire():
+        _notify_already_running()
+        return
     run_first_run_setup()
     app = WindTunnelApp()
     app.mainloop()

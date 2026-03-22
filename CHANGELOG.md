@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.10] - 2026-03-22
+
+### Fixed
+
+- **Single instance:** **Windows** (named mutex) and **Linux/macOS** (non-blocking file lock) so only one HWTW process runs. Avoids many windows when SmartScreen or first-run setup is slow and **`HWTW.exe`** is double-clicked repeatedly.
+
 ## [1.2.9] - 2026-03-22
 
 ### Fixed
