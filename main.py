@@ -29,11 +29,14 @@ psutil = None  # set in bootstrap_requirements()
 _SINGLE_INSTANCE_MUTEX: object | None = None
 _SINGLE_INSTANCE_LOCK_FD: int | None = None
 
-__version__ = "1.2.14"
+__version__ = "1.2.15"
 APP_SHORT = "HWTW"
 
 # Shown once per version after upgrade (see _show_version_news_if_needed).
 WHATS_NEW_BY_VERSION: dict[str, str] = {
+    "1.2.15": (
+        "• **Windows:** **Docker** / **WSL** status checks no longer flash **console** windows and no longer **freeze** the UI — subprocesses use **CREATE_NO_WINDOW**, and heavy polls run in a **background thread**."
+    ),
     "1.2.14": (
         "• **Uninstall:** **Windows MSI** adds **Start → HWTW → Uninstall HWTW**; see **Help** / **[INSTALL.md](https://github.com/ta10101/HWTW/blob/main/INSTALL.md#uninstall)** for every platform (portable **`.exe`**, **macOS**, **Linux**)."
     ),
@@ -391,6 +394,7 @@ def _bootstrap_via_project_venv(parent: tk.Misc | None, req: str) -> bool:
                 capture_output=True,
                 text=True,
                 timeout=120,
+                **_merge_windows_no_console({}),
             )
         except Exception as e:
             if splash:
@@ -468,6 +472,7 @@ def _bootstrap_via_project_venv(parent: tk.Misc | None, req: str) -> bool:
             capture_output=True,
             text=True,
             timeout=600,
+            **_merge_windows_no_console({}),
         )
     except Exception as e:
         if splash:
@@ -511,6 +516,23 @@ def setup_marker_path() -> str:
     return os.path.join(app_dir(), MARKER)
 
 
+def _merge_windows_no_console(kwargs: dict) -> dict:
+    """
+    PyInstaller --windowed / pythonw: spawning docker.exe, wsl.exe, etc. without this can
+    flash a console window on every poll and steal focus. CREATE_NEW_CONSOLE (winget, wsl --install)
+    must stay visible — do not add NO_WINDOW when that flag is set.
+    """
+    out = dict(kwargs)
+    if sys.platform != "win32" or not hasattr(subprocess, "CREATE_NO_WINDOW"):
+        return out
+    cf = int(out.get("creationflags", 0) or 0)
+    new_console = getattr(subprocess, "CREATE_NEW_CONSOLE", 0)
+    if new_console and (cf & new_console):
+        return out
+    out["creationflags"] = cf | subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
+    return out
+
+
 def run_cmd(
     args: list[str],
     *,
@@ -524,7 +546,7 @@ def run_cmd(
             text=True,
             timeout=timeout,
             shell=False,
-            **kwargs,
+            **_merge_windows_no_console(dict(kwargs)),
         )
         return p.returncode, p.stdout or "", p.stderr or ""
     except subprocess.TimeoutExpired:
@@ -642,6 +664,7 @@ def bootstrap_requirements(parent: tk.Misc | None, *, force_install: bool = Fals
                 capture_output=True,
                 text=True,
                 timeout=600,
+                **_merge_windows_no_console({}),
             )
             result[0] = proc.returncode
             pip_out[0] = (proc.stdout or "") + (proc.stderr or "")
@@ -1151,6 +1174,8 @@ class WindTunnelApp(tk.Tk):
         self._poll_after_id: str | None = None
         self._preflight_after_id: str | None = None
         self._easy_dash_after_id: str | None = None
+        self._easy_dash_worker_busy = False
+        self._preflight_busy = False
         self._cpu_history: deque[float] = deque(maxlen=90)
         self._welcome_win: tk.Toplevel | None = None
 
@@ -1711,27 +1736,24 @@ class WindTunnelApp(tk.Tk):
         if len(coords) >= 4:
             cv.create_line(*coords, fill="#1565c0", width=2, smooth=True)
 
-    def _update_easy_dashboard(self) -> None:
-        if self._easy_dash_after_id:
-            try:
-                self.after_cancel(self._easy_dash_after_id)
-            except tk.TclError:
-                pass
-            self._easy_dash_after_id = None
+    def _finish_easy_dashboard(
+        self,
+        d_ok: bool,
+        r_ok: bool | None,
+        w_ok: bool | None,
+        plat: str,
+    ) -> None:
         try:
-            d_ok = docker_cli_ok()
             self._easy_set_pill(0, "Docker engine", "Running ✓" if d_ok else "Not ready ✗", d_ok)
 
-            if sys.platform == "win32":
-                w_ok = wsl2_environment_ready()
+            if plat == "win32" and w_ok is not None:
                 self._easy_set_pill(1, "WSL 2 (Windows)", "Ready ✓" if w_ok else "Set up WSL ✗", w_ok)
-            elif sys.platform == "darwin":
+            elif plat == "darwin":
                 self._easy_set_pill(1, "WSL 2", "N/A (Mac)", None)
             else:
                 self._easy_set_pill(1, "WSL 2", "Not needed", None)
 
-            if d_ok:
-                r_ok = wind_tunnel_runner_running()
+            if d_ok and r_ok is not None:
                 self._easy_set_pill(2, "Wind Tunnel", "Container up ✓" if r_ok else "Not running", r_ok)
                 if r_ok:
                     self._lbl_runner_status_banner.configure(
@@ -1788,55 +1810,103 @@ class WindTunnelApp(tk.Tk):
                     self._lbl_easy_disk.configure(text=f"{pct:.0f}%")
             self._draw_cpu_sparkline()
         except tk.TclError:
+            pass
+        finally:
+            self._easy_dash_worker_busy = False
+            self._easy_dash_after_id = self.after(2500, self._update_easy_dashboard)
+
+    def _update_easy_dashboard(self) -> None:
+        if self._easy_dash_after_id:
+            try:
+                self.after_cancel(self._easy_dash_after_id)
+            except tk.TclError:
+                pass
+            self._easy_dash_after_id = None
+        if self._easy_dash_worker_busy:
+            self._easy_dash_after_id = self.after(2500, self._update_easy_dashboard)
             return
-        self._easy_dash_after_id = self.after(1500, self._update_easy_dashboard)
+        self._easy_dash_worker_busy = True
+
+        def work() -> None:
+            d_ok = docker_cli_ok()
+            r_ok: bool | None = None
+            if d_ok:
+                r_ok = wind_tunnel_runner_running()
+            w_ok: bool | None = None
+            if sys.platform == "win32":
+                w_ok = wsl2_environment_ready()
+                plat = "win32"
+            elif sys.platform == "darwin":
+                plat = "darwin"
+            else:
+                plat = "linux"
+            self.after(0, lambda: self._finish_easy_dashboard(d_ok, r_ok, w_ok, plat))
+
+        threading.Thread(target=work, daemon=True).start()
 
     def _preflight_ok_color(self, ok: bool | None) -> str:
         if ok is None:
             return "#666"
         return "#0a7a0a" if ok else "#b00020"
 
-    def _refresh_preflight(self) -> None:
-        ok_d = docker_cli_ok()
-        self.lbl_pf_docker.configure(
-            text=f"Docker daemon: {'OK' if ok_d else 'not reachable'}",
-            foreground=self._preflight_ok_color(ok_d),
-        )
-        if sys.platform == "win32":
-            ok_w = wsl2_environment_ready()
-            self.lbl_pf_wsl.configure(
-                text=f"WSL 2: {'OK' if ok_w else 'not ready'}",
-                foreground=self._preflight_ok_color(ok_w),
-            )
-        elif sys.platform == "darwin":
-            self.lbl_pf_wsl.configure(text="WSL 2: n/a (macOS)", foreground="#666")
-        else:
-            self.lbl_pf_wsl.configure(text="WSL 2: n/a (not Windows)", foreground="#666")
-
-        if psutil is None:
-            self.lbl_pf_ram.configure(text="RAM: unknown (psutil)", foreground="#666")
-            self.lbl_pf_disk.configure(text="Disk free: unknown (psutil)", foreground="#666")
-            return
-
+    def _apply_preflight_ui(self, ok_d: bool, ok_w: bool | None) -> None:
         try:
-            vm = psutil.virtual_memory()
-            ok_ram = vm.total >= MIN_RAM_BYTES
-            self.lbl_pf_ram.configure(
-                text=f"RAM: {vm.total // (1024**3)} GiB total — {'meets ≥8 GiB' if ok_ram else 'below 8 GiB guide minimum'}",
-                foreground=self._preflight_ok_color(ok_ram),
+            self.lbl_pf_docker.configure(
+                text=f"Docker daemon: {'OK' if ok_d else 'not reachable'}",
+                foreground=self._preflight_ok_color(ok_d),
             )
-            du = primary_disk_usage()
-            if du:
-                ok_disk = du.free >= MIN_DISK_FREE_BYTES
-                self.lbl_pf_disk.configure(
-                    text=f"Disk free: {du.free // (1024**3)} GiB — {'meets ≥10 GiB' if ok_disk else 'below 10 GiB guide minimum'}",
-                    foreground=self._preflight_ok_color(ok_disk),
+            if sys.platform == "win32" and ok_w is not None:
+                self.lbl_pf_wsl.configure(
+                    text=f"WSL 2: {'OK' if ok_w else 'not ready'}",
+                    foreground=self._preflight_ok_color(ok_w),
                 )
+            elif sys.platform == "darwin":
+                self.lbl_pf_wsl.configure(text="WSL 2: n/a (macOS)", foreground="#666")
             else:
-                self.lbl_pf_disk.configure(text="Disk free: unknown", foreground="#666")
-        except Exception:
-            self.lbl_pf_ram.configure(text="RAM: error", foreground="#b00020")
-            self.lbl_pf_disk.configure(text="Disk: error", foreground="#b00020")
+                self.lbl_pf_wsl.configure(text="WSL 2: n/a (not Windows)", foreground="#666")
+
+            if psutil is None:
+                self.lbl_pf_ram.configure(text="RAM: unknown (psutil)", foreground="#666")
+                self.lbl_pf_disk.configure(text="Disk free: unknown (psutil)", foreground="#666")
+                return
+
+            try:
+                vm = psutil.virtual_memory()
+                ok_ram = vm.total >= MIN_RAM_BYTES
+                self.lbl_pf_ram.configure(
+                    text=f"RAM: {vm.total // (1024**3)} GiB total — {'meets ≥8 GiB' if ok_ram else 'below 8 GiB guide minimum'}",
+                    foreground=self._preflight_ok_color(ok_ram),
+                )
+                du = primary_disk_usage()
+                if du:
+                    ok_disk = du.free >= MIN_DISK_FREE_BYTES
+                    self.lbl_pf_disk.configure(
+                        text=f"Disk free: {du.free // (1024**3)} GiB — {'meets ≥10 GiB' if ok_disk else 'below 10 GiB guide minimum'}",
+                        foreground=self._preflight_ok_color(ok_disk),
+                    )
+                else:
+                    self.lbl_pf_disk.configure(text="Disk free: unknown", foreground="#666")
+            except Exception:
+                self.lbl_pf_ram.configure(text="RAM: error", foreground="#b00020")
+                self.lbl_pf_disk.configure(text="Disk: error", foreground="#b00020")
+        except tk.TclError:
+            pass
+        finally:
+            self._preflight_busy = False
+
+    def _refresh_preflight(self) -> None:
+        if self._preflight_busy:
+            return
+        self._preflight_busy = True
+
+        def work() -> None:
+            ok_d = docker_cli_ok()
+            ok_w: bool | None = None
+            if sys.platform == "win32":
+                ok_w = wsl2_environment_ready()
+            self.after(0, lambda: self._apply_preflight_ui(ok_d, ok_w))
+
+        threading.Thread(target=work, daemon=True).start()
 
     def _start_preflight_poll(self) -> None:
         def tick() -> None:
@@ -1847,11 +1917,26 @@ class WindTunnelApp(tk.Tk):
         self._preflight_after_id = self.after(3000, tick)
 
     def _refresh_docker_status(self) -> None:
-        if docker_cli_ok():
-            ver = docker_version_line()
-            self.lbl_docker.configure(text=f"Docker: OK{f' (engine {ver})' if ver else ''}")
-        else:
-            self.lbl_docker.configure(text="Docker: not available — use “Install / fix Docker”")
+        def work() -> None:
+            ok = docker_cli_ok()
+            ver = docker_version_line() if ok else None
+
+            def apply() -> None:
+                try:
+                    if ok:
+                        self.lbl_docker.configure(
+                            text=f"Docker: OK{f' (engine {ver})' if ver else ''}"
+                        )
+                    else:
+                        self.lbl_docker.configure(
+                            text="Docker: not available — use “Install / fix Docker”"
+                        )
+                except tk.TclError:
+                    pass
+
+            self.after(0, apply)
+
+        threading.Thread(target=work, daemon=True).start()
 
     def _start_docker_status_poll(self) -> None:
         def tick() -> None:

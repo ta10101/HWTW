@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **README:** Windows MSI bullet aligned with **INSTALL.md** (icon **v1.2.13+**, uninstall shortcut **v1.2.14+**).
 
+## [1.2.15] - 2026-03-22
+
+### Fixed
+
+- **Windows (windowed / frozen app):** **Docker**, **WSL**, and **Wind Tunnel** status polling no longer opens flashing **CMD** windows (**`subprocess.CREATE_NO_WINDOW`** on helper subprocesses; **`CREATE_NEW_CONSOLE`** flows unchanged for **winget** / **WSL install**).
+- **UI responsiveness:** Easy-start dashboard, preflight, and header **Docker** line updates run **`docker` / `wsl` checks off the Tk thread** so the window stays interactive while probes run. Easy dashboard poll interval **2.5s** (was **1.5s**).
+
 ## [1.2.14] - 2026-03-22
 
 ### Added
