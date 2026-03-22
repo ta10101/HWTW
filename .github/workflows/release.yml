@@ -349,4 +349,10 @@ jobs:
         run: |
           set -eux
           TAG="${{ needs['windows-exe'].outputs.tag }}"
-          gh release edit "$TAG" --draft=false --latest --repo "${{ github.repository }}"
+          REPO="${{ github.repository }}"
+          # PATCH is reliable for draft→published + make_latest (gh release edit --latest can miss edge cases).
+          RID=$(gh api "repos/${REPO}/releases/tags/${TAG}" -q .id)
+          gh api "repos/${REPO}/releases/${RID}" -X PATCH \
+            -f draft=false \
+            -F make_latest=true
+          gh release view "$TAG" -R "$REPO"

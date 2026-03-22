@@ -1,0 +1,32 @@
+# One-off: GitHub "Latest" is whichever release has make_latest. Run this if CI published assets but Latest stayed on an old tag.
+name: Set release as Latest
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag (e.g. v1.2.11)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  set-latest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish draft (if needed) and set as Latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eux
+          TAG="${{ inputs.tag }}"
+          TAG="${TAG#refs/tags/}"
+          REPO="${{ github.repository }}"
+          RID=$(gh api "repos/${REPO}/releases/tags/${TAG}" -q .id)
+          gh api "repos/${REPO}/releases/${RID}" -X PATCH \
+            -f draft=false \
+            -F make_latest=true
+          echo "Latest should now be $TAG"
+          gh release view "$TAG" -R "$REPO"
