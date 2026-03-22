@@ -5,6 +5,17 @@ HWTW helps you run the **Holochain Wind Tunnel** runner with Docker.
 
 **Important:** Wind Tunnel needs **Docker** running. HWTW only runs Docker commands for you — install Docker separately.
 
+### Not covered by this guide
+
+- **macOS** — no official steps here; use Python + Docker on Mac from source if you know how.  
+- **Fedora, Arch, and other non-`apt` Linux** — easy scripts won’t work; install Python 3.10+, venv, Tk, Docker yourself, then `python3 main.py`.  
+- **Chromebook without Linux (Crostini)** — no app for pure Chrome OS; enable **Linux** in Settings first.  
+- **Windows before 10** — unsupported.  
+- **Docker / WSL** — never bundled; you install them separately.  
+- **Strict school/work PCs** — may block Docker or Linux; not something HWTW can fix.  
+- **Wind Tunnel in Docker on every Chromebook** — often **not** possible due to Crostini limits (`--privileged`, `--net=host`). See **Holo’s official guide** for what they support.  
+- **Holo endorsement** — third-party tool; not affiliated with Holo (see [README disclaimer](README.md#disclaimer)).
+
 ---
 
 ## Windows 10 / 11
