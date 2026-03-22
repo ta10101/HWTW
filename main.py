@@ -29,11 +29,14 @@ psutil = None  # set in bootstrap_requirements()
 _SINGLE_INSTANCE_MUTEX: object | None = None
 _SINGLE_INSTANCE_LOCK_FD: int | None = None
 
-__version__ = "1.2.13"
+__version__ = "1.2.14"
 APP_SHORT = "HWTW"
 
 # Shown once per version after upgrade (see _show_version_news_if_needed).
 WHATS_NEW_BY_VERSION: dict[str, str] = {
+    "1.2.14": (
+        "• **Uninstall:** **Windows MSI** adds **Start → HWTW → Uninstall HWTW**; see **Help** / **[INSTALL.md](https://github.com/ta10101/HWTW/blob/main/INSTALL.md#uninstall)** for every platform (portable **`.exe`**, **macOS**, **Linux**)."
+    ),
     "1.2.13": (
         "• **Windows / macOS:** New **app icon** (`.exe`, **`.app`**, MSI shortcuts, and **Programs and Features**)."
     ),

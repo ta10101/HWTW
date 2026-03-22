@@ -7,9 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
+## [1.2.14] - 2026-03-22
 
-- **Documentation:** README and INSTALL lead with **Get the latest release** / **Get the latest build first**; emphasize **[Latest](https://github.com/ta10101/HWTW/releases/latest)** and that **[All releases](https://github.com/ta10101/HWTW/releases)** lists **newest first**. SECURITY, Windows/macOS install steps, release note template, and **`workflow_dispatch`** example tag updated to match.
+### Added
+
+- **Uninstall:** **Windows MSI** includes a **Start Menu** shortcut **Uninstall HWTW** (**`msiexec /x [ProductCode]`**). **README** and **[INSTALL.md](INSTALL.md#uninstall)** document removal for **MSI**, portable **`.exe`**, **macOS** (**.app** + optional **`pkgutil --forget`**), and **Linux** (**.desktop** + delete project folder).
 
 ## [1.2.13] - 2026-03-22
 

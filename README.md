@@ -55,6 +55,21 @@ Desktop app for setting up a **Holo Edge Node** as a [Holochain Wind Tunnel](htt
 
 ---
 
+## Uninstall
+
+| Platform | What to do |
+| -------- | ---------- |
+| **Windows (MSI)** | **Settings → Apps → HWTW (Holo Wind Tunnel GUI)** → **Uninstall**, or **Start → HWTW → Uninstall HWTW** (that shortcut ships with the MSI from **v1.2.14**). Same engine as **Control Panel → Programs and Features**. |
+| **Windows (portable `.exe`)** | Quit HWTW, delete **`HWTW.exe`** (and optional **`hwtw_config.json`** / **`.wind_tunnel_gui_setup_done`** beside it). |
+| **macOS** | Quit, drag **`HWTW.app`** from **Applications** to **Trash**. **`.pkg`** users can run **`sudo pkgutil --forget io.github.ta10101.hwtw.pkg`** after removing the app (clears the receipt only). |
+| **Linux** | Quit, **`rm ~/.local/share/applications/hwtw.desktop`** (or **`$XDG_DATA_HOME/applications/hwtw.desktop`**), then delete the project folder (e.g. **`~/HWTW-main`**, includes **`.venv`**). |
+
+**Docker** is never removed by the steps above — uninstall it separately if you want.
+
+Full detail: **[INSTALL.md — Uninstall](INSTALL.md#uninstall)**.
+
+---
+
 ## Install guide — Windows
 
 ### Who this is for
@@ -348,7 +363,7 @@ git push -u origin main
 ## Creating a release
 
 1. Bump **`__version__`** in `main.py` and **`CHANGELOG.md`**, commit and push.  
-2. `git tag -a v1.2.13 -m "Release v1.2.13"` && `git push origin v1.2.13` (use the real version).  
+2. `git tag -a v1.2.14 -m "Release v1.2.14"` && `git push origin v1.2.14` (use the real version).  
 3. When CI finishes, open **[Latest](https://github.com/ta10101/HWTW/releases/latest)** for **`HWTW.exe`**, **`HWTW.msi`**, **`requirements.txt`**, and macOS **`.dmg`** / **`.app.zip`** / **`.pkg`**. **[All releases](https://github.com/ta10101/HWTW/releases)** stays sorted **newest first**.  
 4. **Optional (maintainers):** configure **[MACOS_SIGNING.md](MACOS_SIGNING.md)** secrets so the macOS artifact is **signed and notarized** instead of **`HWTW-macOS-unsigned.dmg`**.
 

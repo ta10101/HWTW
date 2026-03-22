@@ -74,6 +74,13 @@
             Target="[#filHWTWexe]"
             WorkingDirectory="INSTALLFOLDER"
             Icon="IconHWTW" />
+        <!-- Runs Windows Installer remove for this product (same as Settings → Apps → Uninstall). -->
+        <Shortcut
+            Id="scUninstallHWTW"
+            Name="Uninstall HWTW"
+            Description="Remove HWTW from this PC"
+            Target="[System64Folder]msiexec.exe"
+            Arguments="/x [ProductCode]" />
         <RemoveFolder Id="RemoveHWTWProgramsFolder" On="uninstall" />
         <RegistryValue
             Root="HKLM"
