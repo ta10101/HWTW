@@ -29,11 +29,14 @@ psutil = None  # set in bootstrap_requirements()
 _SINGLE_INSTANCE_MUTEX: object | None = None
 _SINGLE_INSTANCE_LOCK_FD: int | None = None
 
-__version__ = "1.2.17"
+__version__ = "1.2.18"
 APP_SHORT = "HWTW"
 
 # Shown once per version after upgrade (see _show_version_news_if_needed).
 WHATS_NEW_BY_VERSION: dict[str, str] = {
+    "1.2.18": (
+        "• **Windows MSI:** License RTF is passed to **`light`** as **`-dWixUILicenseRtf=<absolute path>`** plus **`-b`** binder path so **CI** can link **WixUI_FeatureTree** reliably."
+    ),
     "1.2.17": (
         "• **Windows MSI:** Second **WiX** fix — **`WixUILicenseRtf`** is in its own **`Fragment`** so **`Package`** stays the **first** child of **`Product`** (required by **WiX 3**)."
     ),

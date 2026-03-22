@@ -90,7 +90,13 @@ jobs:
             -out obj\ `
             packaging\wix\HWTW.wxs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & light.exe -nologo -sw1076 -ext WixUIExtension -out dist\HWTW.msi obj\HWTW.wixobj
+          $license = (Resolve-Path "packaging\wix\License.rtf").Path
+          if (-not (Test-Path -LiteralPath $license)) { Write-Error "Missing $license"; exit 1 }
+          Write-Host "WixUILicenseRtf=$license"
+          & light.exe -nologo -sw1076 -ext WixUIExtension `
+            "-dWixUILicenseRtf=$license" `
+            -b "$PWD" `
+            -out dist\HWTW.msi obj\HWTW.wixobj
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           Get-Item dist\HWTW.msi | Format-List *
 

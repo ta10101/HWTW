@@ -42,9 +42,7 @@
     </Feature>
   </Product>
 
-  <Fragment>
-    <WixVariable Id="WixUILicenseRtf" Value="packaging\wix\License.rtf" />
-  </Fragment>
+  <!-- WixUILicenseRtf is set at link time (light -dWixUILicenseRtf=...) so the path resolves on CI. -->
 
   <Fragment>
     <Directory Id="TARGETDIR" Name="SourceDir">

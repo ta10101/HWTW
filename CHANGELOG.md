@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **README:** Windows MSI bullet aligned with **INSTALL.md** (icon **v1.2.13+**, uninstall shortcut **v1.2.14+**).
 
+## [1.2.18] - 2026-03-22
+
+### Fixed
+
+- **Windows MSI (CI):** Drop inline **`WixUILicenseRtf`** from **`.wxs`**; **`light`** now receives **`-dWixUILicenseRtf=<resolved path>`** and **`-b` $PWD** so the license file binds correctly on **GitHub Actions** (avoids link-time **LGHT** / missing-file failures).
+
 ## [1.2.17] - 2026-03-22
 
 ### Fixed
