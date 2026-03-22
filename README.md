@@ -36,7 +36,7 @@ On the **first run**, the app installs dependencies from `requirements.txt`, may
 
 ## Windows release binary (CI)
 
-Pushing a **version tag** `v*` (e.g. `v1.0.1`) builds **HWTW.exe** with PyInstaller and uploads **`HWTW.exe`** plus **`requirements.txt`** to a GitHub Release (workflow: `.github/workflows/release.yml`). Keep **`requirements.txt`** beside the `.exe` so first-run `pip install` can find it.
+Pushing a **version tag** `v*` (e.g. `v1.0.2`) builds **HWTW.exe** with PyInstaller and uploads **`HWTW.exe`** plus **`requirements.txt`** to a GitHub Release (workflow: `.github/workflows/release.yml`). Keep **`requirements.txt`** beside the `.exe` so first-run `pip install` can find it.
 
 ## Publishing on GitHub
 
@@ -60,8 +60,8 @@ Pushing a **version tag** `v*` (e.g. `v1.0.1`) builds **HWTW.exe** with PyInstal
 2. Tag and push (starts the **Release** workflow and uploads `HWTW.exe` + `requirements.txt`):
 
    ```bash
-   git tag -a v1.0.1 -m "Release v1.0.1"
-   git push origin v1.0.1
+   git tag -a v1.0.2 -m "Release v1.0.2"
+   git push origin v1.0.2
    ```
 
 3. On GitHub, open **Releases** — the workflow creates the release and attaches the binaries. Edit the release notes if you want.
@@ -78,9 +78,7 @@ Ship **`dist/HWTW.exe`** and **`dist/requirements.txt`** together.
 
 ## CI
 
-GitHub Actions runs on push and pull requests: install dependencies and `python -m py_compile main.py` on **ubuntu-latest** and on a **[self-hosted, Windows]** runner (your PC must run `C:\actions-runner\run.cmd` so Windows jobs can start).
-
-To use **only** GitHub-hosted runners again, change `.github/workflows/ci.yml` and `release.yml` back to `runs-on: windows-latest`.
+GitHub Actions runs on push and pull requests: install dependencies and `python -m py_compile main.py` on **ubuntu-latest** and **windows-latest** (no self-hosted runner required).
 
 ## License
 
