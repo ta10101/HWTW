@@ -18,7 +18,7 @@ from tkinter import filedialog, messagebox, scrolledtext, ttk
 
 psutil = None  # set in bootstrap_requirements()
 
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 APP_SHORT = "HWTW"
 
 IMAGE = "ghcr.io/holochain/wind-tunnel-runner:latest"
