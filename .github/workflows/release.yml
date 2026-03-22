@@ -354,5 +354,5 @@ jobs:
           RID=$(gh api "repos/${REPO}/releases/tags/${TAG}" -q .id)
           gh api "repos/${REPO}/releases/${RID}" -X PATCH \
             -f draft=false \
-            -F make_latest=true
+            -f make_latest=true
           gh release view "$TAG" -R "$REPO"
