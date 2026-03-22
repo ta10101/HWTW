@@ -178,18 +178,23 @@ jobs:
           overwrite_files: false
           generate_release_notes: true
           body: |
-            ### Download latest (Windows — these links track **Latest** after this release is published)
+            ### Downloads for **${{ steps.meta.outputs.tag }}** (this release)
 
-            **Users:** install from **[Latest](https://github.com/ta10101/HWTW/releases/latest)** — GitHub shows **newest first** under **[All releases](https://github.com/ta10101/HWTW/releases)**.
+            These links point at **this tag’s assets** (correct even before **Latest** is updated).
 
-            | Asset | Direct link |
-            | ----- | ----------- |
-            | **Portable app** | [`HWTW.exe`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW.exe) |
-            | **Installer (x64)** | [`HWTW.msi`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW.msi) |
-            | **Python deps list** | [`requirements.txt`](https://github.com/ta10101/HWTW/releases/latest/download/requirements.txt) |
-            | **SHA-256 checksums** | [`SHA256SUMS.txt`](https://github.com/ta10101/HWTW/releases/latest/download/SHA256SUMS.txt) |
+            | Platform | Asset | Direct link |
+            | -------- | ----- | ----------- |
+            | Windows | Portable app | [`HWTW.exe`](https://github.com/${{ github.repository }}/releases/download/${{ steps.meta.outputs.tag }}/HWTW.exe) |
+            | Windows | Installer (x64) | [`HWTW.msi`](https://github.com/${{ github.repository }}/releases/download/${{ steps.meta.outputs.tag }}/HWTW.msi) |
+            | Windows | Python deps list | [`requirements.txt`](https://github.com/${{ github.repository }}/releases/download/${{ steps.meta.outputs.tag }}/requirements.txt) |
+            | Windows | SHA-256 checksums | [`SHA256SUMS.txt`](https://github.com/${{ github.repository }}/releases/download/${{ steps.meta.outputs.tag }}/SHA256SUMS.txt) |
+            | macOS | DMG (unsigned CI) | [`HWTW-macOS-unsigned.dmg`](https://github.com/${{ github.repository }}/releases/download/${{ steps.meta.outputs.tag }}/HWTW-macOS-unsigned.dmg) |
+            | macOS | DMG (signed, if present) | [`HWTW-macOS.dmg`](https://github.com/${{ github.repository }}/releases/download/${{ steps.meta.outputs.tag }}/HWTW-macOS.dmg) |
+            | macOS | App zip | [`HWTW-macOS.app.zip`](https://github.com/${{ github.repository }}/releases/download/${{ steps.meta.outputs.tag }}/HWTW-macOS.app.zip) |
+            | macOS | PKG | [`HWTW-macOS.pkg`](https://github.com/${{ github.repository }}/releases/download/${{ steps.meta.outputs.tag }}/HWTW-macOS.pkg) |
+            | macOS | SHA-256 checksums | [`SHA256SUMS-macos.txt`](https://github.com/${{ github.repository }}/releases/download/${{ steps.meta.outputs.tag }}/SHA256SUMS-macos.txt) |
 
-            **macOS** (`.dmg`, `HWTW-macOS.app.zip`, `HWTW-macOS.pkg`, `SHA256SUMS-macos.txt`) is added by CI, then this draft is published. Unsigned builds use filenames like `HWTW-macOS-unsigned.dmg`.
+            **After publish:** when this release is **[Latest](https://github.com/${{ github.repository }}/releases/latest)**, the same files are also at **`/releases/latest/download/<filename>`**.
 
             ---
           files: |

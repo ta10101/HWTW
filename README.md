@@ -12,10 +12,15 @@
 | **Windows installer (x64)** | [`HWTW.msi`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW.msi) |
 | **SHA-256 checksums (Windows assets)** | [`SHA256SUMS.txt`](https://github.com/ta10101/HWTW/releases/latest/download/SHA256SUMS.txt) |
 | **Bundled `requirements.txt`** | [`requirements.txt`](https://github.com/ta10101/HWTW/releases/latest/download/requirements.txt) |
+| **macOS DMG (unsigned CI)** | [`HWTW-macOS-unsigned.dmg`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW-macOS-unsigned.dmg) |
+| **macOS DMG (signed, when published)** | [`HWTW-macOS.dmg`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW-macOS.dmg) |
+| **macOS app zip** | [`HWTW-macOS.app.zip`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW-macOS.app.zip) |
+| **macOS installer (pkg)** | [`HWTW-macOS.pkg`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW-macOS.pkg) |
+| **macOS SHA-256 checksums** | [`SHA256SUMS-macos.txt`](https://github.com/ta10101/HWTW/releases/latest/download/SHA256SUMS-macos.txt) |
 
-**macOS** — filenames vary (**`HWTW-macOS.dmg`** vs **`HWTW-macOS-unsigned.dmg`**, plus **`.app.zip`**, **`.pkg`**, **`SHA256SUMS-macos.txt`**). Open **[Latest → Assets](https://github.com/ta10101/HWTW/releases/latest)** on that release page.
+Only **one** of the two **DMG** rows applies per release (unsigned from default CI, or signed when repo signing secrets are set); the other link may **404** — use **[Latest → Assets](https://github.com/ta10101/HWTW/releases/latest)** if unsure.
 
-If **Latest** is wrong while newer **tags** exist, the **Release** workflow may have failed — check **[Actions → Release](https://github.com/ta10101/HWTW/actions/workflows/release.yml)**, then **Run workflow** with the tag to publish (e.g. **`v1.2.14`**) or push a new **`v*`** tag.
+If **Latest** still shows an old version after a green **Release** run, run **[Set release as Latest](https://github.com/ta10101/HWTW/actions/workflows/set-latest-release.yml)** with your new tag, or check **[Actions → Release](https://github.com/ta10101/HWTW/actions/workflows/release.yml)** / push a new **`v*`** tag.
 
 **Official downloads:** **`ta10101/HWTW`** only. Verify Windows assets with **`SHA256SUMS.txt`** and macOS with **`SHA256SUMS-macos.txt`**.
 

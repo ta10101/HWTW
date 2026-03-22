@@ -6,7 +6,9 @@ Use **[Latest](https://github.com/ta10101/HWTW/releases/latest)** (newest publis
 
 **Windows (direct links):** [`HWTW.exe`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW.exe) · [`HWTW.msi`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW.msi) · [`SHA256SUMS.txt`](https://github.com/ta10101/HWTW/releases/latest/download/SHA256SUMS.txt) · [`requirements.txt`](https://github.com/ta10101/HWTW/releases/latest/download/requirements.txt)
 
-**macOS:** **[Latest → Assets](https://github.com/ta10101/HWTW/releases/latest)** — **`.dmg`**, **`.app.zip`**, **`.pkg`**, **`SHA256SUMS-macos.txt`**.
+**macOS (direct links — same files as [Latest → Assets](https://github.com/ta10101/HWTW/releases/latest)):** [`HWTW-macOS-unsigned.dmg`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW-macOS-unsigned.dmg) · [`HWTW-macOS.dmg`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW-macOS.dmg) *(signed builds only; may 404 otherwise)* · [`HWTW-macOS.app.zip`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW-macOS.app.zip) · [`HWTW-macOS.pkg`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW-macOS.pkg) · [`SHA256SUMS-macos.txt`](https://github.com/ta10101/HWTW/releases/latest/download/SHA256SUMS-macos.txt)
+
+If **Latest** is stale after a successful release, run **[Set release as Latest](https://github.com/ta10101/HWTW/actions/workflows/set-latest-release.yml)** so these **`/latest/download/...`** URLs match the newest build.
 
 ---
 
