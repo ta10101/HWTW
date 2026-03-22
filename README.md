@@ -31,6 +31,55 @@ python main.py
 
 On the **first run**, the app installs dependencies from `requirements.txt`, may offer **Docker** and **WSL** setup on Windows, and creates a local marker file `.wind_tunnel_gui_setup_done` (ignored by git). If you already ran an older version, run `python -m pip install -r requirements.txt` once to pick up **sv-ttk** (dark theme).
 
+### Make the GitHub repo **public** (one-time, for easy Chromebook / `wget`)
+
+The links in this README use **`https://github.com/ta10101/HWTW`**. A **404** in the browser or from `wget` means the repo is missing, still private, or not pushed yet.
+
+1. Sign in at [github.com/new](https://github.com/new).
+2. **Repository name:** `HWTW` (matches `git clone …/HWTW.git` and the zip folder name `HWTW-main`).
+3. Set visibility to **Public**.
+4. **Do not** add a README, `.gitignore`, or license on GitHub (this project already has them).
+5. On your PC, in this project folder, push `main` (use **HTTPS** or **SSH**; GitHub will prompt for login or a [personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) if needed):
+
+   ```bash
+   git remote -v
+   git push -u origin main
+   ```
+
+   If `origin` is wrong, set it once:  
+   `git remote set-url origin https://github.com/ta10101/HWTW.git`  
+   (change `ta10101` to your GitHub username if the repo lives under another account.)
+
+6. Confirm: open [https://github.com/ta10101/HWTW](https://github.com/ta10101/HWTW) in a **private/incognito** window — you should see the files without signing in.
+7. If the repo already existed but was **private**: **Settings → General → Danger Zone → Change repository visibility → Public**.
+
+After that, **Releases**, **Download ZIP**, and Chromebook `wget` below all work without a GitHub password for **read-only** access.
+
+### Chromebook / Debian Linux (no Git password; use `venv` for `pip`)
+
+**`pip install --user` is blocked** on Chromebook Linux (PEP 668). Always use a **virtual environment** as below.
+
+**When the repo is public**, copy-paste:
+
+```bash
+cd ~
+wget -O hwtw.zip https://github.com/ta10101/HWTW/archive/refs/heads/main.zip
+unzip -q -o hwtw.zip
+cd HWTW-main
+sudo apt update
+sudo apt install -y python3 python3-pip python3-venv python3-tk
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python main.py
+```
+
+If `wget` still says **404**, the project is not public at that URL yet — follow **Make the GitHub repo public** above, or temporarily use **Code → Download ZIP** in the browser once the repo is visible.
+
+**Fork or different repo name?** Replace `ta10101/HWTW` in the `wget` URL and `cd` into the folder GitHub creates (`YourRepo-main`). **`git clone`** of a public repo does not need a GitHub login unless a school/proxy forces one — then use ZIP from the browser.
+
+**Offline / no GitHub:** zip the project on another machine, copy into **Linux files**, `unzip`, `cd` into the folder, then the same `sudo apt install …`, `venv`, `pip`, `python main.py` block (skip `wget`).
+
 ## What it does
 
 - Prep: `docker stop edgenode` / `docker rm edgenode` (optional).
@@ -49,19 +98,18 @@ Pushing a **version tag** `v*` (e.g. `v1.1.1`) builds **HWTW.exe** with PyInstal
 
 ## Publishing on GitHub
 
-1. Create a new repository on GitHub (empty, no README if you already have one locally).
-2. From this folder:
+First-time setup matches **Make the GitHub repo public** above (create empty **public** `HWTW` repo, then `git push -u origin main`). If you are starting from a folder without git:
 
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit: Holo Wind Tunnel GUI"
-   git branch -M main
-   git remote add origin https://github.com/ta10101/HWTW.git
-   git push -u origin main
-   ```
+```bash
+git init
+git add .
+git commit -m "Initial commit: Holo Wind Tunnel GUI"
+git branch -M main
+git remote add origin https://github.com/ta10101/HWTW.git
+git push -u origin main
+```
 
-3. In the repo **Settings → General**, optionally add a **description**, **website** (e.g. https://holo.host), and topics such as `holochain`, `holo`, `docker`, `wind-tunnel`.
+In the repo **Settings → General**, optionally add a **description**, **website** (e.g. https://holo.host), and topics such as `holochain`, `holo`, `docker`, `wind-tunnel`.
 
 ## Creating a release
 

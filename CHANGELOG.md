@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- README: **Chromebook / no Git credentials** — ZIP or `wget` archive + note that public `git clone` needs no GitHub login.
+
+### Changed
+
+- README: Chromebook / Debian — **`venv`** for `pip` (PEP 668); explain **404** on `wget` zip (wrong/missing GitHub URL); **copy folder** / Drive zip path.
+- README: **Make the GitHub repo public** (step-by-step); Chromebook block uses canonical URL once public; **Publishing on GitHub** defers to that section.
+
 ## [1.1.1] - 2025-03-22
 
 ### Added
