@@ -68,6 +68,26 @@ jobs:
             throw "Could not download valid icon from $url (private repo? network?)"
           }
 
+      # MSI/WiX UI needs License.rtf; tags before the WiX MSI work (~v1.2.12) may not have packaging/wix/License.rtf.
+      - name: Ensure WiX License.rtf (old tags)
+        shell: pwsh
+        env:
+          REPO: ${{ github.repository }}
+        run: |
+          $license = Join-Path $env:GITHUB_WORKSPACE "packaging/wix/License.rtf"
+          if (Test-Path -LiteralPath $license) {
+            Write-Host "License.rtf present in checkout."
+            exit 0
+          }
+          Write-Host "::notice::License.rtf missing on this ref — downloading from main."
+          $dir = Split-Path $license -Parent
+          New-Item -ItemType Directory -Force -Path $dir | Out-Null
+          $url = "https://raw.githubusercontent.com/$env:REPO/main/packaging/wix/License.rtf"
+          Invoke-WebRequest -Uri $url -OutFile $license -MaximumRetryCount 3 -RetryIntervalSec 2
+          if (-not (Test-Path -LiteralPath $license) -or ((Get-Item -LiteralPath $license).Length -lt 8)) {
+            throw "Could not download License.rtf from $url"
+          }
+
       - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip
@@ -114,8 +134,7 @@ jobs:
             -out obj\ `
             packaging\wix\HWTW.wxs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          $license = (Resolve-Path "packaging\wix\License.rtf").Path
-          if (-not (Test-Path -LiteralPath $license)) { Write-Error "Missing $license"; exit 1 }
+          $license = (Resolve-Path (Join-Path $env:GITHUB_WORKSPACE "packaging/wix/License.rtf")).Path
           Write-Host "WixUILicenseRtf=$license"
           & light.exe -nologo -sw1076 -ext WixUIExtension `
             "-dWixUILicenseRtf=$license" `
