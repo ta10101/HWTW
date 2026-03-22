@@ -9,11 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Linux easy install:** `install-linux.sh` (apt + clean `.venv` + pip + optional desktop entry), `run-hwtw-linux.sh` launcher, `fetch-hwtw-linux.sh` one-step download from GitHub into `~/HWTW-main`. README section for non-technical Linux users (curl/wget one-liners).
+- **Linux easy install:** `install-linux.sh`, `run-hwtw-linux.sh`, `fetch-hwtw-linux.sh`; README curl/wget one-liners.
+- **`INSTALL.md`** — one-page Windows + Linux install; linked from README.
 
 ### Changed
 
-- **README:** single **install hub** (table), full **Install guide — Windows** and **Install guide — Linux** (numbered steps, paths A–D, checklists); title set to cross-platform.
+- **README:** install hub (table), full **Windows** / **Linux** guides (steps, paths A–D, checklists); cross-platform title.
 
 ### Security
 

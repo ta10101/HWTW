@@ -15,6 +15,8 @@ Desktop app for setting up a **Holo Edge Node** as a [Holochain Wind Tunnel](htt
 
 **Everyone:** Wind Tunnel needs **Docker** running. HWTW only drives Docker — it does not replace Docker.
 
+**One-page install only:** **[INSTALL.md](INSTALL.md)** (same Windows / Linux steps, easy to print or share).
+
 ---
 
 ## Install guide — Windows
