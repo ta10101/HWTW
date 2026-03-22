@@ -15,11 +15,13 @@ permissions:
   contents: read
 
 jobs:
-  # Publish Windows first so HWTW.exe + SHA256SUMS always ship even if macOS fails later.
+  # Immutable releases: keep the GitHub release as draft until macOS assets are uploaded, then publish in publish-release.
   windows-exe:
     permissions:
       contents: write
     runs-on: windows-latest
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
     steps:
       - name: Resolve release tag and ref
         id: meta
@@ -93,16 +95,16 @@ jobs:
         run: |
           python -c "import hashlib, pathlib; d=pathlib.Path('dist'); g=lambda n: hashlib.sha256(d.joinpath(n).read_bytes()).hexdigest(); names=['HWTW.exe','requirements.txt','HWTW.msi']; t='\n'.join([g(n)+'  '+n for n in names])+'\n'; d.joinpath('SHA256SUMS.txt').write_text(t, encoding='utf-8'); print(t)"
 
-      - name: Create GitHub Release (Windows)
+      - name: Create draft GitHub Release (Windows assets)
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.meta.outputs.tag }}
-          draft: false
+          draft: true
           prerelease: false
-          make_latest: true
+          make_latest: false
           generate_release_notes: true
           body: |
-            ### Download latest (Windows — these links track **Latest**)
+            ### Download latest (Windows — these links track **Latest** after this release is published)
 
             | Asset | Direct link |
             | ----- | ----------- |
@@ -111,7 +113,7 @@ jobs:
             | **Python deps list** | [`requirements.txt`](https://github.com/ta10101/HWTW/releases/latest/download/requirements.txt) |
             | **SHA-256 checksums** | [`SHA256SUMS.txt`](https://github.com/ta10101/HWTW/releases/latest/download/SHA256SUMS.txt) |
 
-            **macOS** (`.dmg`, `HWTW-macOS.app.zip`, `HWTW-macOS.pkg`, `SHA256SUMS-macos.txt`) is attached when the **macOS** job completes — open **Assets** below. Unsigned builds use filenames like `HWTW-macOS-unsigned.dmg`.
+            **macOS** (`.dmg`, `HWTW-macOS.app.zip`, `HWTW-macOS.pkg`, `SHA256SUMS-macos.txt`) is added by CI, then this draft is published. Unsigned builds use filenames like `HWTW-macOS-unsigned.dmg`.
 
             ---
           files: |
@@ -222,13 +224,30 @@ jobs:
           PKG_VERSION: ${{ steps.pkgver.outputs.version }}
         run: bash packaging/build-macos-zip-pkg.sh
 
-      - name: Attach macOS assets to release
+      - name: Attach macOS assets to draft release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.meta.outputs.tag }}
+          draft: true
           generate_release_notes: false
           files: |
             dist/${{ steps.names.outputs.dmg }}
             dist/HWTW-macOS.app.zip
             dist/HWTW-macOS.pkg
             dist/SHA256SUMS-macos.txt
+
+  publish-release:
+    name: Publish release (draft → public, Latest)
+    needs: [windows-exe, macos-dmg]
+    if: ${{ always() && needs['windows-exe'].result == 'success' }}
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eux
+          TAG="${{ needs['windows-exe'].outputs.tag }}"
+          gh release edit "$TAG" --draft=false --latest --repo "${{ github.repository }}"

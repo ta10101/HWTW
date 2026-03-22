@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Release CI:** GitHub’s workflow parser rejects **`secrets` in `if:`** and in **`${{ }}` inside `run:`** (only direct **`env:` / `with:`** assignments like **`${{ secrets.NAME }}`** are valid). Earlier we also hit **`secrets` inside `env:` for a boolean**. macOS signing steps now branch in the shell on **`[ -n "$P12_BASE64" ]`** with **`P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12 }}`** on the step. **`workflow_dispatch`** can rebuild an existing tag after pushing this fix.
+- **Immutable releases:** If the repo uses **immutable releases**, uploading macOS assets **after** Windows had already **published** the release fails. The workflow now creates a **draft** with Windows files, attaches macOS files to the same **draft**, then a **`publish-release`** job runs **`gh release edit --draft=false --latest`** (still runs if macOS fails, so Windows-only releases publish).
 
 ### Changed
 
