@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-03-22
+
+### Changed
+
+- **Runner status URL:** Easy and Expert tabs show a **full example link** to [wind-tunnel-runner-status.holochain.org](https://wind-tunnel-runner-status.holochain.org/) using placeholder **`nomad-client-yourname-01`** so users see the exact URL shape; copy clarifies replacing **yourname** with their own. The live URL field still tracks the hostname they enter.
+
 ## [1.2.1] - 2026-03-22
 
 ### Added

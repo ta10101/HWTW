@@ -23,11 +23,14 @@ from tkinter import filedialog, messagebox, scrolledtext, ttk
 
 psutil = None  # set in bootstrap_requirements()
 
-__version__ = "1.2.1"
+__version__ = "1.2.2"
 APP_SHORT = "HWTW"
 
 IMAGE = "ghcr.io/holochain/wind-tunnel-runner:latest"
 RUNNER_STATUS_ORIGIN = "https://wind-tunnel-runner-status.holochain.org"
+# Shown in the UI so users see the exact URL shape (they replace “yourname” with their choice).
+RUNNER_STATUS_EXAMPLE_HOSTNAME = "nomad-client-yourname-01"
+RUNNER_STATUS_EXAMPLE_URL = f"{RUNNER_STATUS_ORIGIN}/status?{urlencode({'hostname': RUNNER_STATUS_EXAMPLE_HOSTNAME})}"
 GUIDE_URL = "https://holo.host/files/EdgeNodeWindTunnelGuide.pdf"
 GUIDE_HTML = "https://holo.host/resources/edge-node-wind-tunnel-guide/"
 DOCKER_WIN_INSTALL_URL = "https://docs.docker.com/desktop/setup/install/windows-install/"
@@ -1167,7 +1170,7 @@ class WindTunnelApp(tk.Tk):
 
         ttk.Label(
             hn_easy,
-            text="Holochain status check — full URL (paste into your browser’s address bar):",
+            text="Holochain status check — your full link (paste into any browser; page refreshes ~every minute):",
             wraplength=520,
         ).pack(anchor=tk.W, pady=(10, 0))
         url_inner = ttk.Frame(hn_easy)
@@ -1182,6 +1185,15 @@ class WindTunnelApp(tk.Tk):
             side=tk.LEFT, padx=(6, 0)
         )
         ttk.Button(url_inner, text="Open", command=self._on_open_runner_status_url).pack(side=tk.LEFT, padx=(6, 0))
+        ttk.Label(
+            hn_easy,
+            text=(
+                f"Example full link — replace “yourname” with your own (e.g. jane → nomad-client-jane-01):\n{RUNNER_STATUS_EXAMPLE_URL}"
+            ),
+            wraplength=520,
+            font=("TkFixedFont", 9),
+            foreground="#333",
+        ).pack(anchor=tk.W, pady=(8, 0))
 
         big = ttk.Frame(tab)
         big.pack(fill=tk.X, pady=16)
@@ -1233,7 +1245,7 @@ class WindTunnelApp(tk.Tk):
         st_fr.pack(fill=tk.X, pady=(10, 0))
         ttk.Label(
             st_fr,
-            text="Holochain runner status (wind-tunnel-runner-status.holochain.org) — full URL:",
+            text="Holochain runner status — your full URL (same page as the public dashboard):",
             wraplength=640,
         ).pack(anchor=tk.W)
         st_row = ttk.Frame(st_fr)
@@ -1248,6 +1260,15 @@ class WindTunnelApp(tk.Tk):
         ttk.Button(st_row, text="Open in browser", command=self._on_open_runner_status_url).pack(
             side=tk.LEFT, padx=(6, 0)
         )
+        ttk.Label(
+            st_fr,
+            text=(
+                f"Example full link — replace “yourname” with your own (e.g. jane → nomad-client-jane-01):\n{RUNNER_STATUS_EXAMPLE_URL}"
+            ),
+            wraplength=640,
+            font=("TkFixedFont", 9),
+            foreground="#333",
+        ).pack(anchor=tk.W, pady=(8, 0))
 
         act = ttk.LabelFrame(tab, text="Docker actions (official guide steps)", padding=8)
         act.pack(fill=tk.X, pady=(0, 8))
