@@ -4,6 +4,14 @@ Desktop GUI for setting up a **Holo Edge Node** as a [Holochain Wind Tunnel](htt
 
 **Official PDF:** [EdgeNodeWindTunnelGuide.pdf](https://holo.host/files/EdgeNodeWindTunnelGuide.pdf)
 
+## For non-technical users (Windows)
+
+1. **Download `HWTW.exe`** from [Releases](https://github.com/ta10101/HWTW/releases) (no Python needed).
+2. **Install Docker Desktop once** from [Docker](https://docs.docker.com/desktop/setup/install/windows-install/) — this is separate from HWTW; Microsoft licensing and drivers mean it cannot be fully hidden inside our `.exe`. The app can **start the install helper** (winget) for you.
+3. **Start Docker Desktop** and wait until it is running.
+4. Open **HWTW** → stay on **“Easy start”**: green boxes = good, bars show CPU/RAM/disk, then **Download Wind Tunnel image** → **Start Wind Tunnel**.
+5. If something fails, click **“Why isn’t it working?”** or use **Help** in the menu.
+
 ## Requirements
 
 - **Python** 3.10 or newer (includes Tkinter on most installers).
@@ -33,10 +41,11 @@ On the **first run**, the app installs dependencies from `requirements.txt`, may
 - Saves **hostname**, optional **dark theme**, and log tail in `hwtw_config.json` (next to the app; git-ignored).
 - Timestamped command log with **clear** / **save to .txt**; **copy** full `docker run` line; **docker logs** tail for the running runner.
 - **View → Dark theme** ([sv-ttk](https://github.com/rdbende/Sun-Valley-ttk-theme)); window title shows **HWTW** + version.
+- **Easy start** tab: large status tiles (Docker / WSL / tunnel / PC), **CPU sparkline** and **progress bars**, **hover tooltips**, first-run **welcome** dialog, plain-language **Help** entries.
 
 ## Windows release binary (CI)
 
-Pushing a **version tag** `v*` (e.g. `v1.0.2`) builds **HWTW.exe** with PyInstaller and uploads **`HWTW.exe`** plus **`requirements.txt`** to a GitHub Release (workflow: `.github/workflows/release.yml`). Keep **`requirements.txt`** beside the `.exe` so first-run `pip install` can find it.
+Pushing a **version tag** `v*` (e.g. `v1.1.1`) builds **HWTW.exe** with PyInstaller (bundles Python, **psutil**, **sv-ttk**) and uploads **`HWTW.exe`** plus **`requirements.txt`** to a GitHub Release. **End users only need the `.exe`** for the GUI; **`requirements.txt`** is for developers running from source.
 
 ## Publishing on GitHub
 
@@ -60,8 +69,8 @@ Pushing a **version tag** `v*` (e.g. `v1.0.2`) builds **HWTW.exe** with PyInstal
 2. Tag and push (starts the **Release** workflow and uploads `HWTW.exe` + `requirements.txt`):
 
    ```bash
-   git tag -a v1.0.2 -m "Release v1.0.2"
-   git push origin v1.0.2
+   git tag -a v1.1.1 -m "Release v1.1.1"
+   git push origin v1.1.1
    ```
 
 3. On GitHub, open **Releases** — the workflow creates the release and attaches the binaries. Edit the release notes if you want.
