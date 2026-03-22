@@ -57,7 +57,7 @@ After that, **Releases**, **Download ZIP**, and Chromebook `wget` below all work
 
 ### Chromebook / Debian Linux (no Git password)
 
-**`pip install` into system Python is blocked** on Chromebook Linux (PEP 668). **HWTW v1.1.2+** creates a project **`.venv`**, installs dependencies there, and restarts itself — you only need to run **`python3 main.py`** once `python3-venv` is installed.
+**`pip install` into system Python is blocked** on Chromebook Linux (PEP 668). **HWTW v1.1.3+** always uses a project **`.venv`** on Linux, installs dependencies there, and restarts itself — run **`python3 main.py`** from the folder that contains `main.py` (e.g. `cd ~/HWTW-main` or `cd ~/HWTW`). Install **`python3-venv`** (and **`python3-full`** if `venv` errors).
 
 **When the repo is public**, copy-paste:
 
@@ -67,11 +67,13 @@ wget -O hwtw.zip https://github.com/ta10101/HWTW/archive/refs/heads/main.zip
 unzip -q -o hwtw.zip
 cd HWTW-main
 sudo apt update
-sudo apt install -y python3 python3-pip python3-venv python3-tk
+sudo apt install -y python3 python3-pip python3-venv python3-full python3-tk
 python3 main.py
 ```
 
-If setup says **`venv` failed**, ensure **`python3-venv`** is installed (`sudo apt install python3-venv`). You can still install by hand: `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt && .venv/bin/python main.py`.
+**Important:** run `python3 main.py` **inside** the project directory (`cd` into `HWTW-main` or `HWTW` first). Running it from `~` causes `can't open file '.../main.py'`.
+
+If **`venv` fails**, run `sudo apt install python3-venv python3-full`. Manual install: `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt && .venv/bin/python main.py`.
 
 If `wget` still says **404**, the project is not public at that URL yet — follow **Make the GitHub repo public** above, or temporarily use **Code → Download ZIP** in the browser once the repo is visible.
 

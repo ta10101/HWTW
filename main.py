@@ -21,7 +21,7 @@ from tkinter import filedialog, messagebox, scrolledtext, ttk
 
 psutil = None  # set in bootstrap_requirements()
 
-__version__ = "1.1.2"
+__version__ = "1.1.3"
 APP_SHORT = "HWTW"
 
 IMAGE = "ghcr.io/holochain/wind-tunnel-runner:latest"
@@ -82,6 +82,13 @@ def is_externally_managed() -> bool:
         return (stdlib / "EXTERNALLY-MANAGED").is_file()
     except Exception:
         return False
+
+
+def _use_project_venv_for_bootstrap() -> bool:
+    """Linux source runs always use .venv — PEP 668 is universal on Chromebook/Debian; marker path can differ."""
+    if is_frozen():
+        return False
+    return sys.platform.startswith("linux")
 
 
 def _venv_python(venv_dir: str) -> str | None:
@@ -159,8 +166,9 @@ def _bootstrap_via_project_venv(parent: tk.Misc | None, req: str) -> bool:
             messagebox.showerror(
                 "Could not create .venv",
                 f"{e}\n\nIn the project folder, run:\n"
+                f"  sudo apt install python3-venv python3-full\n"
                 f"  python3 -m venv .venv\n"
-                f'  .venv/bin/pip install -r requirements.txt\n'
+                f"  .venv/bin/pip install -r requirements.txt\n"
                 f"  .venv/bin/python main.py",
                 parent=parent,
             )
@@ -360,7 +368,7 @@ def bootstrap_requirements(parent: tk.Misc | None, *, force_install: bool = Fals
         _load_psutil()
         return psutil is not None
 
-    if is_externally_managed():
+    if _use_project_venv_for_bootstrap() or is_externally_managed():
         return _bootstrap_via_project_venv(parent, req)
 
     splash = None
@@ -420,20 +428,37 @@ def bootstrap_requirements(parent: tk.Misc | None, *, force_install: bool = Fals
             pass
 
     if result[0] != 0:
+        blob = pip_out[0][:1500] if pip_out[0] else "(no output)"
+        if "externally-managed-environment" in blob and not is_frozen():
+            return _bootstrap_via_project_venv(parent, req)
         messagebox.showerror(
             "Dependency install failed",
-            "pip could not install packages from requirements.txt.\n\n"
-            + (pip_out[0][:1500] if pip_out[0] else "(no output)"),
+            "pip could not install packages from requirements.txt.\n\n" + blob,
             parent=parent,
         )
 
     _load_psutil()
     if psutil is None:
+        app_root = app_dir()
+        vpy = _venv_python(os.path.join(app_root, ".venv"))
+        if vpy and os.path.isfile(vpy):
+            hint = (
+                f"Try:\n  {shlex.quote(vpy)} -m pip install -r {shlex.quote(req)}\n"
+                f"  {shlex.quote(vpy)} {shlex.quote(os.path.join(app_root, 'main.py'))}"
+            )
+        elif sys.platform.startswith("linux"):
+            hint = (
+                "On Linux, from the project folder:\n"
+                "  python3 -m venv .venv\n"
+                "  .venv/bin/pip install -r requirements.txt\n"
+                "  .venv/bin/python main.py\n"
+                "If venv fails: sudo apt install python3-venv python3-full"
+            )
+        else:
+            hint = f'  "{sys.executable}" -m pip install -r "{req}"'
         messagebox.showwarning(
             "psutil missing",
-            "CPU/RAM/disk panel will be limited until psutil installs correctly.\n"
-            "Try manually:\n"
-            f'  "{sys.executable}" -m pip install -r "{req}"',
+            "CPU/RAM/disk panel will be limited until psutil installs correctly.\n\n" + hint,
             parent=parent,
         )
         return False
