@@ -1,0 +1,37 @@
+# Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local first-run marker (do not publish user-specific state)
+.wind_tunnel_gui_setup_done
+
+# PyInstaller / packaging
+build/
+dist/
+*.spec
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Editors / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Distribution
+*.egg-info/
+.eggs/
+wheels/
