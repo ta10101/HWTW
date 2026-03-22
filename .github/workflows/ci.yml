@@ -46,4 +46,4 @@ jobs:
 
       - name: macOS install scripts (bash syntax)
         if: runner.os == 'macOS'
-        run: bash -n install-macos.sh && bash -n run-hwtw-macos.sh
+        run: bash -n install-macos.sh && bash -n run-hwtw-macos.sh && bash -n packaging/build-macos-dmg.sh
