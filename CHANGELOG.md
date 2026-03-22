@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.4] - 2026-03-23
+
+### Fixed
+
+- **Windows MSI (WiX):** Restore **public desktop** shortcut as **`cmpDesktopShortcut`** under **`CommonDesktopFolder`** (with **`CommonDesktopFolder`** under **`TARGETDIR`**). Do not put **`DesktopFolder`** shortcuts in **`cmpHWTWexe`** — that triggers **ICE43** / **ICE57** (per-user shortcut + per-machine **File** **KeyPath**).
+
 ## [1.3.3] - 2026-03-23
 
 ### Changed

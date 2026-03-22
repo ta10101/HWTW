@@ -29,11 +29,14 @@ psutil = None  # set in bootstrap_requirements()
 _SINGLE_INSTANCE_MUTEX: object | None = None
 _SINGLE_INSTANCE_LOCK_FD: int | None = None
 
-__version__ = "1.3.3"
+__version__ = "1.3.4"
 APP_SHORT = "HWTW"
 
 # Shown once per version after upgrade (see _show_version_news_if_needed).
 WHATS_NEW_BY_VERSION: dict[str, str] = {
+    "1.3.4": (
+        "• **Windows MSI (WiX):** Desktop shortcut is its own component on **`CommonDesktopFolder`** with **HKLM** registry **KeyPath** so **ICE43** / **ICE57** pass (no mixing per-user desktop with per-machine **File** keypath)."
+    ),
     "1.3.3": (
         "• **Windows MSI (WiX):** Desktop shortcut is installed with the **exe** component using **`DesktopFolder`** (no separate **CommonDesktopFolder** component)."
     ),

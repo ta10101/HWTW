@@ -33,6 +33,15 @@
         ConfigurableDirectory="INSTALLFOLDER">
       <ComponentGroupRef Id="ProductComponents" />
       <ComponentRef Id="cmpStartMenuShortcut" />
+      <Feature
+          Id="DesktopShortcutFeature"
+          Title="Desktop shortcut"
+          Description="Adds an HWTW icon to the shared (public) desktop. On Custom setup you can turn this off."
+          Level="1"
+          Display="expand"
+          AllowAdvertise="no">
+        <ComponentRef Id="cmpDesktopShortcut" />
+      </Feature>
     </Feature>
   </Product>
 
@@ -46,8 +55,8 @@
       <Directory Id="CommonProgramsFolder">
         <Directory Id="ApplicationProgramsFolder" Name="HWTW" />
       </Directory>
-      <!-- Per-user desktop; declared under TARGETDIR so Directory:DesktopFolder resolves (LGHT0094). -->
-      <Directory Id="DesktopFolder" />
+      <!-- Public desktop; separate component with HKLM KeyPath avoids ICE43/ICE57 vs exe File KeyPath. -->
+      <Directory Id="CommonDesktopFolder" />
     </Directory>
   </Fragment>
 
@@ -55,14 +64,6 @@
     <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
       <Component Id="cmpHWTWexe" Guid="*">
         <File Id="filHWTWexe" Source="$(var.HwtwExe)" KeyPath="yes" />
-        <Shortcut
-            Id="scHWTWDesktop"
-            Directory="DesktopFolder"
-            Name="HWTW"
-            Description="Holo Wind Tunnel GUI"
-            Target="[#filHWTWexe]"
-            WorkingDirectory="INSTALLFOLDER"
-            Icon="IconHWTW" />
       </Component>
       <Component Id="cmpRequirements" Guid="*">
         <File Id="filRequirements" Source="$(var.ReqTxt)" KeyPath="yes" />
@@ -92,6 +93,27 @@
             Root="HKLM"
             Key="Software\ta10101\HWTW"
             Name="StartMenuShortcut"
+            Type="integer"
+            Value="1"
+            KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+
+  <Fragment>
+    <DirectoryRef Id="CommonDesktopFolder">
+      <Component Id="cmpDesktopShortcut" Guid="*">
+        <Shortcut
+            Id="scHWTWDesktop"
+            Name="HWTW"
+            Description="Holo Wind Tunnel GUI"
+            Target="[#filHWTWexe]"
+            WorkingDirectory="INSTALLFOLDER"
+            Icon="IconHWTW" />
+        <RegistryValue
+            Root="HKLM"
+            Key="Software\ta10101\HWTW"
+            Name="DesktopShortcut"
             Type="integer"
             Value="1"
             KeyPath="yes" />

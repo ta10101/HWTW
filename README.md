@@ -368,7 +368,7 @@ git push -u origin main
 ## Creating a release
 
 1. Bump **`__version__`** in `main.py` and **`CHANGELOG.md`**, commit and push.  
-2. `git tag -a v1.3.3 -m "Release v1.3.3"` && `git push origin v1.3.3` (use the real version).  
+2. `git tag -a v1.3.4 -m "Release v1.3.4"` && `git push origin v1.3.4` (use the real version).  
 3. When CI finishes, open **[Latest](https://github.com/ta10101/HWTW/releases/latest)** for **`HWTW.exe`**, **`HWTW.msi`**, **`requirements.txt`**, and macOS **`.dmg`** / **`.app.zip`** / **`.pkg`**. **[All releases](https://github.com/ta10101/HWTW/releases)** stays sorted **newest first**.  
 4. **Optional (maintainers):** configure **[MACOS_SIGNING.md](MACOS_SIGNING.md)** secrets so the macOS artifact is **signed and notarized** instead of **`HWTW-macOS-unsigned.dmg`**.
 
