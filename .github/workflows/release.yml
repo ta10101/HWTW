@@ -75,7 +75,23 @@ jobs:
       - name: Create GitHub Release (Windows)
         uses: softprops/action-gh-release@v2
         with:
+          draft: false
+          prerelease: false
+          make_latest: true
           generate_release_notes: true
+          body: |
+            ### Download latest (Windows — these links track **Latest**)
+
+            | Asset | Direct link |
+            | ----- | ----------- |
+            | **Portable app** | [`HWTW.exe`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW.exe) |
+            | **Installer (x64)** | [`HWTW.msi`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW.msi) |
+            | **Python deps list** | [`requirements.txt`](https://github.com/ta10101/HWTW/releases/latest/download/requirements.txt) |
+            | **SHA-256 checksums** | [`SHA256SUMS.txt`](https://github.com/ta10101/HWTW/releases/latest/download/SHA256SUMS.txt) |
+
+            **macOS** (`.dmg`, `HWTW-macOS.app.zip`, `HWTW-macOS.pkg`, `SHA256SUMS-macos.txt`) is attached when the **macOS** job completes — open **Assets** below. Unsigned builds use filenames like `HWTW-macOS-unsigned.dmg`.
+
+            ---
           files: |
             dist/HWTW.exe
             dist/HWTW.msi

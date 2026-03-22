@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Releases:** Windows publish step sets **`make_latest: true`** and prepends a **download table** to release notes; README / INSTALL document **`/releases/latest/download/...`** links for **`HWTW.exe`**, **`HWTW.msi`**, **`SHA256SUMS.txt`**, and **`requirements.txt`**.
+
 ## [1.2.8] - 2026-03-22
 
 ### Added

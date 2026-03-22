@@ -16,7 +16,20 @@ Desktop app for setting up a **Holo Edge Node** as a [Holochain Wind Tunnel](htt
 
 **Everyone:** Wind Tunnel needs **Docker** running. HWTW only drives Docker — it does not replace Docker.
 
-**Official downloads:** From **[GitHub Releases](https://github.com/ta10101/HWTW/releases)** (`ta10101/HWTW`) only: **Windows** — **`HWTW.exe`** or **`HWTW.msi`**; **macOS** — **`HWTW-macOS*.dmg`**, **`HWTW-macOS.app.zip`**, or **`HWTW-macOS.pkg`** (installer to **`/Applications`**). Verify with **`SHA256SUMS.txt`** and **`SHA256SUMS-macos.txt`**.
+### Download latest (stable URLs)
+
+These links follow GitHub’s **Latest** release ([open release page](https://github.com/ta10101/HWTW/releases/latest)):
+
+| Asset | Direct download |
+| ----- | ---------------- |
+| **Windows portable** | [`HWTW.exe`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW.exe) |
+| **Windows installer (x64)** | [`HWTW.msi`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW.msi) |
+| **SHA-256 checksums (Windows assets)** | [`SHA256SUMS.txt`](https://github.com/ta10101/HWTW/releases/latest/download/SHA256SUMS.txt) |
+| **Bundled `requirements.txt`** | [`requirements.txt`](https://github.com/ta10101/HWTW/releases/latest/download/requirements.txt) |
+
+**macOS** filenames vary (**`HWTW-macOS.dmg`** vs **`HWTW-macOS-unsigned.dmg`**, plus **`.app.zip`**, **`.pkg`**, **`SHA256SUMS-macos.txt`**) — use **[Latest → Assets](https://github.com/ta10101/HWTW/releases/latest)** on the release page.
+
+**Official downloads:** Use **`ta10101/HWTW`** only. Verify Windows files with **`SHA256SUMS.txt`** and macOS with **`SHA256SUMS-macos.txt`**.
 
 **One-page install only:** **[INSTALL.md](INSTALL.md)** (Windows, macOS, Linux — easy to print or share).
 

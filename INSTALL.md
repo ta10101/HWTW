@@ -5,7 +5,9 @@ HWTW helps you run the **Holochain Wind Tunnel** runner with Docker.
 
 **Important:** Wind Tunnel needs **Docker** running. HWTW only runs Docker commands for you — install Docker separately.
 
-**Official downloads:** Use **[GitHub Releases — ta10101/HWTW](https://github.com/ta10101/HWTW/releases)** only. **Windows:** **`HWTW.exe`** / **`HWTW.msi`**. **macOS:** **`.dmg`**, **`HWTW-macOS.app.zip`**, or **`HWTW-macOS.pkg`**. Verify with **`SHA256SUMS.txt`** and **`SHA256SUMS-macos.txt`**.
+**Official downloads:** Use **`ta10101/HWTW`** only.
+
+**Latest release — direct links (Windows):** [`HWTW.exe`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW.exe) · [`HWTW.msi`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW.msi) · [`SHA256SUMS.txt`](https://github.com/ta10101/HWTW/releases/latest/download/SHA256SUMS.txt) · [`requirements.txt`](https://github.com/ta10101/HWTW/releases/latest/download/requirements.txt). **macOS:** open **[Latest release → Assets](https://github.com/ta10101/HWTW/releases/latest)** for **`.dmg`**, **`.app.zip`**, **`.pkg`**, and **`SHA256SUMS-macos.txt`**.
 
 ### Not covered by this guide
 

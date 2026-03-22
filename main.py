@@ -494,7 +494,7 @@ def bootstrap_requirements(parent: tk.Misc | None, *, force_install: bool = Fals
                 "Missing built-in libraries",
                 "This build should include psutil but it failed to load.\n\n"
                 "• Download the latest **HWTW.exe** from:\n"
-                "  https://github.com/ta10101/HWTW/releases\n"
+                "  https://github.com/ta10101/HWTW/releases/latest\n"
                 "  (avoid very old releases — they may not bundle psutil correctly.)\n\n"
                 "• If you already use the latest build: Windows Security may be blocking a "
                 "component — try “Allow on device” or an exclusion for HWTW.exe.",
@@ -1110,7 +1110,7 @@ class WindTunnelApp(tk.Tk):
         )
         help_m.add_command(
             label="HWTW downloads (GitHub Releases)…",
-            command=lambda: _open_url("https://github.com/ta10101/HWTW/releases"),
+            command=lambda: _open_url("https://github.com/ta10101/HWTW/releases/latest"),
         )
         menubar.add_cascade(label="Help", menu=help_m)
         self.config(menu=menubar)
@@ -1559,7 +1559,7 @@ class WindTunnelApp(tk.Tk):
         if extra:
             lines.append(extra)
             lines.append("")
-        lines.append("Full release notes: https://github.com/ta10101/HWTW/releases")
+        lines.append("Full release notes: https://github.com/ta10101/HWTW/releases/latest")
         body = "\n".join(lines)
 
         win = tk.Toplevel(self)
