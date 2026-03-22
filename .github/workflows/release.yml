@@ -53,14 +53,23 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pyinstaller psutil "sv-ttk>=2.6.0"
 
+      # Absolute --icon: PyInstaller anchors relative paths to CONF['specpath'], which can differ during the EXE
+      # phase on Windows runners → FileNotFoundError for packaging\icons\HWTW.ico. Tags before v1.2.13 have no icon.
       - name: Build executable
-        run: >
-          pyinstaller --onefile --windowed --name HWTW
-          --icon packaging\icons\HWTW.ico
-          --collect-all sv_ttk --collect-all psutil
-          --collect-submodules psutil
-          --hidden-import=psutil --hidden-import=psutil._pswindows --hidden-import=psutil._psutil_windows
-          main.py
+        shell: pwsh
+        run: |
+          $icon = Join-Path $env:GITHUB_WORKSPACE "packaging/icons/HWTW.ico"
+          if (-not (Test-Path -LiteralPath $icon)) {
+            Write-Host "::error::Missing $icon — this tag/commit may predate packaging/icons/HWTW.ico (added v1.2.13+)."
+            Get-ChildItem -Path (Join-Path $env:GITHUB_WORKSPACE "packaging") -Recurse -ErrorAction SilentlyContinue
+            exit 1
+          }
+          pyinstaller --onefile --windowed --name HWTW `
+            --icon $icon `
+            --collect-all sv_ttk --collect-all psutil `
+            --collect-submodules psutil `
+            --hidden-import=psutil --hidden-import=psutil._pswindows --hidden-import=psutil._psutil_windows `
+            main.py
 
       - name: Copy requirements for sidecar install
         run: copy requirements.txt dist\
@@ -81,12 +90,14 @@ jobs:
           while ($parts.Count -lt 3) { $parts += '0' }
           $msiVer = "$($parts[0]).$($parts[1]).$($parts[2]).0"
           Write-Host "MSI ProductVersion=$msiVer"
+          $icon = Join-Path $env:GITHUB_WORKSPACE "packaging/icons/HWTW.ico"
+          if (-not (Test-Path -LiteralPath $icon)) { Write-Error "Missing $icon"; exit 1 }
           New-Item -ItemType Directory -Force -Path obj | Out-Null
           & candle.exe -nologo -arch x64 -ext WixUIExtension `
             "-dProductVersion=$msiVer" `
             "-dHwtwExe=dist\HWTW.exe" `
             "-dReqTxt=dist\requirements.txt" `
-            "-dIconIco=packaging\icons\HWTW.ico" `
+            "-dIconIco=$icon" `
             -out obj\ `
             packaging\wix\HWTW.wxs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
