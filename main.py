@@ -9,7 +9,9 @@ import importlib
 import json
 import os
 import shlex
+import shutil
 import sysconfig
+from urllib.parse import urlencode
 from collections import deque
 from pathlib import Path
 import subprocess
@@ -21,10 +23,11 @@ from tkinter import filedialog, messagebox, scrolledtext, ttk
 
 psutil = None  # set in bootstrap_requirements()
 
-__version__ = "1.1.3"
+__version__ = "1.1.4"
 APP_SHORT = "HWTW"
 
 IMAGE = "ghcr.io/holochain/wind-tunnel-runner:latest"
+RUNNER_STATUS_ORIGIN = "https://wind-tunnel-runner-status.holochain.org"
 GUIDE_URL = "https://holo.host/files/EdgeNodeWindTunnelGuide.pdf"
 GUIDE_HTML = "https://holo.host/resources/edge-node-wind-tunnel-guide/"
 DOCKER_WIN_INSTALL_URL = "https://docs.docker.com/desktop/setup/install/windows-install/"
@@ -36,6 +39,14 @@ CONFIG_NAME = "hwtw_config.json"
 MIN_RAM_BYTES = 8 * 1024**3
 MIN_DISK_FREE_BYTES = 10 * 1024**3
 DEFAULT_LOG_TAIL = 200
+
+
+def runner_status_check_url(hostname: str) -> str:
+    """Full URL for the Holochain Wind Tunnel runner status page (matches /status?hostname=… on the dashboard)."""
+    h = (hostname or "").strip()
+    if not h:
+        return f"{RUNNER_STATUS_ORIGIN}/"
+    return f"{RUNNER_STATUS_ORIGIN}/status?{urlencode({'hostname': h})}"
 
 
 def is_frozen() -> bool:
@@ -128,6 +139,20 @@ def _bootstrap_via_project_venv(parent: tk.Misc | None, req: str) -> bool:
                 parent=parent,
             )
         return False
+
+    # Drop stale/partial .venv before recreating (avoids mixed pip / broken imports).
+    if os.path.isdir(venv_dir):
+        try:
+            shutil.rmtree(venv_dir)
+        except OSError as e:
+            messagebox.showerror(
+                "Could not remove old .venv",
+                f"{e}\n\nClose terminals or apps using this folder, then try again.\n"
+                f"Or delete manually:\n{venv_dir}",
+                parent=parent,
+            )
+            return False
+    venv_py = None
 
     splash = None
     if parent is not None:
@@ -893,6 +918,10 @@ class WindTunnelApp(tk.Tk):
 
         hn = cfg.get("hostname")
         self.var_hostname = tk.StringVar(value=hn if isinstance(hn, str) and hn.strip() else "nomad-client-")
+        self.var_runner_status_url = tk.StringVar(
+            value=runner_status_check_url(self.var_hostname.get())
+        )
+        self.var_hostname.trace_add("write", lambda *_: self._sync_runner_status_url())
         self.var_log_tail = tk.IntVar(value=int(cfg.get("log_tail", DEFAULT_LOG_TAIL)))
 
         self._build_menubar()
@@ -921,6 +950,10 @@ class WindTunnelApp(tk.Tk):
         help_m.add_command(label="Why isn’t it working? …", command=self.show_diagnosis_window)
         help_m.add_command(label="Open Wind Tunnel guide (web)", command=self.open_guide_web)
         help_m.add_command(label="Open official PDF", command=self.open_guide_pdf)
+        help_m.add_command(
+            label="Holochain runner status page…",
+            command=self._on_open_runner_status_url,
+        )
         menubar.add_cascade(label="Help", menu=help_m)
         self.config(menu=menubar)
 
@@ -1073,6 +1106,24 @@ class WindTunnelApp(tk.Tk):
         erow.pack(fill=tk.X, pady=(6, 0))
         ttk.Entry(erow, textvariable=self.var_hostname, width=55).pack(side=tk.LEFT, fill=tk.X, expand=True)
 
+        ttk.Label(
+            hn_easy,
+            text="Holochain status check — full URL (paste into your browser’s address bar):",
+            wraplength=520,
+        ).pack(anchor=tk.W, pady=(10, 0))
+        url_inner = ttk.Frame(hn_easy)
+        url_inner.pack(fill=tk.X, pady=(4, 0))
+        self._entry_runner_status_easy = ttk.Entry(url_inner, textvariable=self.var_runner_status_url)
+        self._entry_runner_status_easy.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        try:
+            self._entry_runner_status_easy.configure(state="readonly")
+        except tk.TclError:
+            pass
+        ttk.Button(url_inner, text="Copy URL", command=self._on_copy_runner_status_url).pack(
+            side=tk.LEFT, padx=(6, 0)
+        )
+        ttk.Button(url_inner, text="Open", command=self._on_open_runner_status_url).pack(side=tk.LEFT, padx=(6, 0))
+
         big = ttk.Frame(tab)
         big.pack(fill=tk.X, pady=16)
         ttk.Button(big, text="Install / fix Docker (Windows helper)", command=self.on_install_docker).pack(
@@ -1114,6 +1165,26 @@ class WindTunnelApp(tk.Tk):
         self.entry_hostname = ttk.Entry(row, textvariable=self.var_hostname, width=50)
         self.entry_hostname.pack(side=tk.LEFT, fill=tk.X, expand=True)
         ttk.Button(row, text="Copy docker run …", command=self.on_copy_run_command).pack(side=tk.LEFT, padx=(8, 0))
+
+        st_fr = ttk.Frame(hn_frame)
+        st_fr.pack(fill=tk.X, pady=(10, 0))
+        ttk.Label(
+            st_fr,
+            text="Holochain runner status (wind-tunnel-runner-status.holochain.org) — full URL:",
+            wraplength=640,
+        ).pack(anchor=tk.W)
+        st_row = ttk.Frame(st_fr)
+        st_row.pack(fill=tk.X, pady=(4, 0))
+        self._entry_runner_status_expert = ttk.Entry(st_row, textvariable=self.var_runner_status_url)
+        self._entry_runner_status_expert.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        try:
+            self._entry_runner_status_expert.configure(state="readonly")
+        except tk.TclError:
+            pass
+        ttk.Button(st_row, text="Copy URL", command=self._on_copy_runner_status_url).pack(side=tk.LEFT, padx=(6, 0))
+        ttk.Button(st_row, text="Open in browser", command=self._on_open_runner_status_url).pack(
+            side=tk.LEFT, padx=(6, 0)
+        )
 
         act = ttk.LabelFrame(tab, text="Docker actions (official guide steps)", padding=8)
         act.pack(fill=tk.X, pady=(0, 8))
@@ -1565,6 +1636,37 @@ class WindTunnelApp(tk.Tk):
 
     def on_pull(self) -> None:
         self._async_cmd("docker pull", ["docker", "pull", IMAGE], timeout=600)
+
+    def _sync_runner_status_url(self) -> None:
+        url = runner_status_check_url(self.var_hostname.get())
+        entries = (
+            getattr(self, "_entry_runner_status_easy", None),
+            getattr(self, "_entry_runner_status_expert", None),
+        )
+        for w in entries:
+            if w is not None:
+                try:
+                    w.configure(state="normal")
+                except tk.TclError:
+                    pass
+        self.var_runner_status_url.set(url)
+        for w in entries:
+            if w is not None:
+                try:
+                    w.configure(state="readonly")
+                except tk.TclError:
+                    pass
+
+    def _on_copy_runner_status_url(self) -> None:
+        url = runner_status_check_url(self.var_hostname.get())
+        self.var_runner_status_url.set(url)
+        self.clipboard_clear()
+        self.clipboard_append(url)
+        self.update_idletasks()
+        messagebox.showinfo("Copied", "Status check URL copied to the clipboard.", parent=self)
+
+    def _on_open_runner_status_url(self) -> None:
+        _open_url(runner_status_check_url(self.var_hostname.get()))
 
     def on_copy_run_command(self) -> None:
         hn = self.var_hostname.get().strip()
