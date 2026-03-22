@@ -12,6 +12,9 @@ env/
 # Local first-run marker (do not publish user-specific state)
 .wind_tunnel_gui_setup_done
 
+# App preferences (hostname, theme)
+hwtw_config.json
+
 # PyInstaller / packaging
 build/
 dist/
