@@ -1,4 +1,4 @@
-# holo-wind-tunnel-gui
+# HWTW (Holo Wind Tunnel — Windows)
 
 Desktop GUI for setting up a **Holo Edge Node** as a [Holochain Wind Tunnel](https://holo.host/resources/edge-node-wind-tunnel-guide/) runner. It runs the same Docker commands as the official guide and shows host resources, hostname, and Docker output.
 
@@ -15,8 +15,8 @@ The upstream guide targets **HolOS/Linux**; on Windows, use Docker Desktop (and 
 ## Quick start
 
 ```bash
-git clone https://github.com/YOUR_USER/holo-wind-tunnel-gui.git
-cd holo-wind-tunnel-gui
+git clone https://github.com/ta10101/HWTW.git
+cd HWTW
 python -m pip install -r requirements.txt
 python main.py
 ```
@@ -41,7 +41,7 @@ On the **first run**, the app installs dependencies from `requirements.txt`, may
    git add .
    git commit -m "Initial commit: Holo Wind Tunnel GUI"
    git branch -M main
-   git remote add origin https://github.com/YOUR_USER/holo-wind-tunnel-gui.git
+   git remote add origin https://github.com/ta10101/HWTW.git
    git push -u origin main
    ```
 
