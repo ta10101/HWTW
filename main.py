@@ -29,11 +29,14 @@ psutil = None  # set in bootstrap_requirements()
 _SINGLE_INSTANCE_MUTEX: object | None = None
 _SINGLE_INSTANCE_LOCK_FD: int | None = None
 
-__version__ = "1.3.2"
+__version__ = "1.3.3"
 APP_SHORT = "HWTW"
 
 # Shown once per version after upgrade (see _show_version_news_if_needed).
 WHATS_NEW_BY_VERSION: dict[str, str] = {
+    "1.3.3": (
+        "• **Windows MSI (WiX):** Desktop shortcut is installed with the **exe** component using **`DesktopFolder`** (no separate **CommonDesktopFolder** component)."
+    ),
     "1.3.2": (
         "• **Windows MSI (WiX):** Installer strings are **ASCII / Windows-1252** only so **light** no longer fails with **LGHT0311** (Unicode arrows in the downgrade message)."
     ),

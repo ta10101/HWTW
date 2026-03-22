@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.3] - 2026-03-23
+
+### Changed
+
+- **Windows MSI (WiX):** Put the desktop **Shortcut** inside **`cmpHWTWexe`** with **`Directory="DesktopFolder"`**; declare **`DesktopFolder`** under **`TARGETDIR`**. Removes **`CommonDesktopFolder`**, **`cmpDesktopShortcut`**, and the optional **Desktop shortcut** sub-feature (shortcut always installs with the app).
+
 ## [1.3.2] - 2026-03-23
 
 ### Fixed
