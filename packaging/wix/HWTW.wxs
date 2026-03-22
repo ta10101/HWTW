@@ -16,7 +16,10 @@
         Platform="x64"
         Description="Desktop helper for Holochain Wind Tunnel (Docker)"
         Comments="Not affiliated with Holo or Holochain Foundation." />
-    <MajorUpgrade DowngradeErrorMessage="A newer version of HWTW is already installed." />
+    <!-- AllowSameVersionUpgrades: same ProductVersion (e.g. rebuilt 1.2.19 MSI) can replace files; otherwise WiX blocks with "newer already installed". -->
+    <MajorUpgrade
+        AllowSameVersionUpgrades="yes"
+        DowngradeErrorMessage="A newer version of HWTW is already installed. Uninstall it in Settings → Apps (or Start → HWTW → Uninstall HWTW) if you need to install an older MSI." />
     <MediaTemplate EmbedCab="yes" />
     <Icon Id="IconHWTW" SourceFile="$(var.IconIco)" />
     <Property Id="ARPPRODUCTICON" Value="IconHWTW" />

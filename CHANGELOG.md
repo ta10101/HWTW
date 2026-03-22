@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Windows MSI (WiX):** **`MajorUpgrade`** sets **`AllowSameVersionUpgrades="yes"`** so reinstalling an MSI with the **same** product version (e.g. a rebuilt **Latest** build) is allowed; clearer **downgrade** message points users to **Uninstall** when the installed copy is **newer** than the MSI.
 - **README / INSTALL:** **macOS** rows now use **`/releases/latest/download/...`** for **`.dmg`** (unsigned + signed), **`.app.zip`**, **`.pkg`**, and **`SHA256SUMS-macos.txt`**; note **Set release as Latest** when **Latest** lags CI.
 - **Release draft notes:** Download table uses **tag-pinned** `releases/download/<tag>/...` URLs for **Windows + macOS** assets so each release page lists the **exact files** for that build; still explains **`/latest/download/`** after publish.
 - **README:** Windows MSI bullet aligned with **INSTALL.md** (icon **v1.2.13+**, uninstall shortcut **v1.2.14+**).

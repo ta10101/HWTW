@@ -44,6 +44,8 @@ HWTW helps you run the **Holochain Wind Tunnel** runner with Docker.
 | 4 | Run **`HWTW.exe`** (or the shortcut from **`HWTW.msi`** under Program Files). If SmartScreen warns, use **More info → Run anyway** if you trust the release. |
 | 5 | In the app, open **Easy start** → fix any red status → **Download Wind Tunnel image** → set **hostname** (e.g. `nomad-client-you-01`) → **Start Wind Tunnel**. |
 
+**MSI says “A newer version is already installed”:** Either (1) the copy on disk has a **higher** product version than this MSI — uninstall in **Settings → Apps** or **Start → HWTW → Uninstall HWTW**, then install again, or grab a **newer** MSI from **[Latest](https://github.com/ta10101/HWTW/releases/latest)**; or (2) you are on an **older** MSI that did not allow **same-version** upgrades — use a **new** MSI from **Latest** (WiX **`AllowSameVersionUpgrades`**), or uninstall once then reinstall.
+
 **MSI blocked by administrator / policy:** If Windows says the **system administrator** has set rules that **prevent this installation** (often on work or school PCs), that is **Group Policy / AppLocker** — not something HWTW can override. Our MSI is **not** signed with a corporate-style certificate. Use the portable **[`HWTW.exe`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW.exe)** from the same release instead, or use a **personal** PC, or ask **IT** for an exception.
 
 **Stuck?** Use **Why isn’t it working?** or **Help** in the app menu.
