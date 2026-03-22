@@ -15,7 +15,7 @@
 
 **macOS** — filenames vary (**`HWTW-macOS.dmg`** vs **`HWTW-macOS-unsigned.dmg`**, plus **`.app.zip`**, **`.pkg`**, **`SHA256SUMS-macos.txt`**). Open **[Latest → Assets](https://github.com/ta10101/HWTW/releases/latest)** on that release page.
 
-If **Latest** is wrong while newer **tags** exist, the **Release** workflow may have failed — check **[Actions → Release](https://github.com/ta10101/HWTW/actions/workflows/release.yml)**, then **Run workflow** with the tag to publish (e.g. **`v1.2.13`**) or push a new **`v*`** tag.
+If **Latest** is wrong while newer **tags** exist, the **Release** workflow may have failed — check **[Actions → Release](https://github.com/ta10101/HWTW/actions/workflows/release.yml)**, then **Run workflow** with the tag to publish (e.g. **`v1.2.14`**) or push a new **`v*`** tag.
 
 **Official downloads:** **`ta10101/HWTW`** only. Verify Windows assets with **`SHA256SUMS.txt`** and macOS with **`SHA256SUMS-macos.txt`**.
 
