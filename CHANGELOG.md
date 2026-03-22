@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.8] - 2026-03-22
+
+### Added
+
+- **macOS release artifacts:** **`HWTW-macOS.app.zip`** ( **`ditto`** zip of **`HWTW.app`** after DMG/sign step) and **`HWTW-macOS.pkg`** (**`pkgbuild`**, installs **`HWTW.app`** under **`/Applications`**).
+- **`packaging/build-macos-zip-pkg.sh`**; **`SHA256SUMS-macos.txt`** lists **`.dmg`**, **`.zip`**, and **`.pkg`** (replaces **`SHA256SUMS-macos-dmg.txt`**).
+
 ## [1.2.7] - 2026-03-22
 
 ### Added

@@ -24,18 +24,22 @@ from tkinter import filedialog, messagebox, scrolledtext, ttk
 
 psutil = None  # set in bootstrap_requirements()
 
-__version__ = "1.2.7"
+__version__ = "1.2.8"
 APP_SHORT = "HWTW"
 
 # Shown once per version after upgrade (see _show_version_news_if_needed).
 WHATS_NEW_BY_VERSION: dict[str, str] = {
+    "1.2.8": (
+        "• **macOS Releases:** **`HWTW-macOS.app.zip`** (zipped **`.app`**) and **`HWTW-macOS.pkg`** (installs into **/Applications**), alongside the **`.dmg`**.\n"
+        "• **`SHA256SUMS-macos.txt`** now covers **DMG + zip + pkg** (replaces the old DMG-only checksum file)."
+    ),
     "1.2.7": (
         "• **Windows:** **`HWTW.msi`** installer (per-machine, x64) on GitHub Releases — installs **`HWTW.exe`** and **`requirements.txt`** under Program Files. The portable **`HWTW.exe`** download is still available.\n"
         "• **`SHA256SUMS.txt`** includes the MSI hash."
     ),
     "1.2.6": (
         "• **GitHub Releases:** Windows **`HWTW.exe`** is published **first** so you always get a build even if the macOS job fails.\n"
-        "• **Checksums:** **`SHA256SUMS.txt`** (exe + requirements) and **`SHA256SUMS-macos-dmg.txt`** (DMG) on releases that include Mac.\n"
+        "• **Checksums:** **`SHA256SUMS.txt`** (Windows) and **`SHA256SUMS-macos.txt`** (macOS DMG + zip + pkg) when the Mac job runs.\n"
         "• **macOS .app build** also bundles **psutil** like Windows."
     ),
     "1.2.5": (

@@ -148,14 +148,21 @@ jobs:
           DMG_NAME: ${{ steps.names.outputs.dmg }}
         run: bash packaging/build-macos-dmg.sh
 
-      - name: DMG checksum
+      - name: Package version for .pkg
+        id: pkgver
+        run: |
+          V="${GITHUB_REF_NAME#v}"
+          V="${V%%-*}"
+          a=0; b=0; c=0
+          IFS=. read -r a b c <<<"$V"
+          : "${a:=0}"; : "${b:=0}"; : "${c:=0}"
+          echo "version=${a}.${b}.${c}" >> "$GITHUB_OUTPUT"
+
+      - name: Zip .app, build .pkg, macOS checksums
         env:
           DMG_NAME: ${{ steps.names.outputs.dmg }}
-        run: |
-          cd dist
-          HASH=$(shasum -a 256 "$DMG_NAME" | awk '{print $1}')
-          echo "$HASH  $(basename "$DMG_NAME")" > SHA256SUMS-macos-dmg.txt
-          cat SHA256SUMS-macos-dmg.txt
+          PKG_VERSION: ${{ steps.pkgver.outputs.version }}
+        run: bash packaging/build-macos-zip-pkg.sh
 
       - name: Attach macOS assets to release
         uses: softprops/action-gh-release@v2
@@ -163,4 +170,6 @@ jobs:
           generate_release_notes: false
           files: |
             dist/${{ steps.names.outputs.dmg }}
-            dist/SHA256SUMS-macos-dmg.txt
+            dist/HWTW-macOS.app.zip
+            dist/HWTW-macOS.pkg
+            dist/SHA256SUMS-macos.txt

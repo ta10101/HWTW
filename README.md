@@ -16,7 +16,7 @@ Desktop app for setting up a **Holo Edge Node** as a [Holochain Wind Tunnel](htt
 
 **Everyone:** Wind Tunnel needs **Docker** running. HWTW only drives Docker — it does not replace Docker.
 
-**Official downloads:** From **[GitHub Releases](https://github.com/ta10101/HWTW/releases)** (`ta10101/HWTW`) only: **Windows** — portable **`HWTW.exe`** or **`HWTW.msi`** (x64 installer; adds **`HWTW.exe`** + **`requirements.txt`** under Program Files); **macOS** — **`HWTW-macOS.dmg`** or **`HWTW-macOS-unsigned.dmg`**. Verify with **`SHA256SUMS.txt`** (exe, requirements, MSI) and **`SHA256SUMS-macos-dmg.txt`** when present.
+**Official downloads:** From **[GitHub Releases](https://github.com/ta10101/HWTW/releases)** (`ta10101/HWTW`) only: **Windows** — **`HWTW.exe`** or **`HWTW.msi`**; **macOS** — **`HWTW-macOS*.dmg`**, **`HWTW-macOS.app.zip`**, or **`HWTW-macOS.pkg`** (installer to **`/Applications`**). Verify with **`SHA256SUMS.txt`** and **`SHA256SUMS-macos.txt`**.
 
 **One-page install only:** **[INSTALL.md](INSTALL.md)** (Windows, macOS, Linux — easy to print or share).
 
@@ -97,7 +97,7 @@ Use **Python 3.10+**. First run may install extra UI pieces (e.g. **sv-ttk**). T
 
 ### Steps (recommended — prebuilt app)
 
-1. Download **`HWTW-macOS.dmg`** or **`HWTW-macOS-unsigned.dmg`** from **[Releases](https://github.com/ta10101/HWTW/releases)**. Open the DMG, drag **HWTW** into **Applications**, and launch from there.  
+1. Download from **[Releases](https://github.com/ta10101/HWTW/releases)** — **`HWTW-macOS*.dmg`** (open and drag **HWTW** to **Applications**), **`HWTW-macOS.app.zip`** (unzip, drag **HWTW.app** to **Applications**), or **`HWTW-macOS.pkg`** (double-click to install into **/Applications**).  
 2. If Gatekeeper blocks an **unsigned** build: **Right-click → Open** on the app, or allow it under **System Settings → Privacy & Security**.  
 3. Install and **start Docker Desktop** for Wind Tunnel **containers**: **[Docker Mac install](https://docs.docker.com/desktop/setup/install/mac-install/)**. HWTW can run **`brew install --cask docker`** from **Install / fix Docker (Mac)** if [Homebrew](https://brew.sh) is installed.
 
@@ -296,7 +296,7 @@ The links in this README use **`https://github.com/ta10101/HWTW`**. A **404** fr
 
 ## Release binaries (CI)
 
-Pushing a **version tag** `v*` builds **Windows** (**`HWTW.exe`**, **`HWTW.msi`** via WiX, **`requirements.txt`**, **`SHA256SUMS.txt`**) into a **GitHub Release** first, then **macOS** attaches the **`.dmg`** and **`SHA256SUMS-macos-dmg.txt`** (see [MACOS_SIGNING.md](MACOS_SIGNING.md)). **Linux** still uses the install scripts or **`python3 main.py`** from this repo.
+Pushing a **version tag** `v*` builds **Windows** (**`HWTW.exe`**, **`HWTW.msi`**, **`requirements.txt`**, **`SHA256SUMS.txt`**) into a **GitHub Release** first, then **macOS** attaches **`.dmg`**, **`.app.zip`**, **`.pkg`**, and **`SHA256SUMS-macos.txt`** (see [MACOS_SIGNING.md](MACOS_SIGNING.md)). **Linux** still uses the install scripts or **`python3 main.py`** from this repo.
 
 ## Publishing on GitHub
 
@@ -315,7 +315,7 @@ git push -u origin main
 
 1. Bump **`__version__`** in `main.py` and **`CHANGELOG.md`**, commit and push.  
 2. `git tag -a v1.1.1 -m "Release v1.1.1"` && `git push origin v1.1.1`  
-3. Check **Releases** for **`HWTW.exe`**, **`HWTW.msi`**, **`requirements.txt`**, and the macOS **`.dmg`**.  
+3. Check **Releases** for **`HWTW.exe`**, **`HWTW.msi`**, **`requirements.txt`**, and macOS **`.dmg`** / **`.app.zip`** / **`.pkg`**.  
 4. **Optional (maintainers):** configure **[MACOS_SIGNING.md](MACOS_SIGNING.md)** secrets so the macOS artifact is **signed and notarized** instead of **`HWTW-macOS-unsigned.dmg`**.
 
 ### Local PyInstaller build (optional)
@@ -328,7 +328,7 @@ copy requirements.txt dist\
 
 ## CI
 
-GitHub Actions: `python -m py_compile main.py` and **`pytest`** on **ubuntu-latest**, **windows-latest**, and **macos-latest**; **`bash -n`** on Linux and macOS install scripts and **`packaging/build-macos-dmg.sh`**.
+GitHub Actions: `python -m py_compile main.py` and **`pytest`** on **ubuntu-latest**, **windows-latest**, and **macos-latest**; **`bash -n`** on Linux and macOS install scripts, **`packaging/build-macos-dmg.sh`**, and **`packaging/build-macos-zip-pkg.sh`**.
 
 ## Security
 

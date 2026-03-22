@@ -1,6 +1,6 @@
 # macOS `.app` / `.dmg` signing and notarization
 
-GitHub Actions builds **`HWTW.app`** with PyInstaller, wraps it in **`HWTW-macOS.dmg`** (or **`HWTW-macOS-unsigned.dmg`** if signing is not configured), and attaches it to the same **Release** as `HWTW.exe`.
+GitHub Actions builds **`HWTW.app`** with PyInstaller, then **`HWTW-macOS.dmg`** (or **`HWTW-macOS-unsigned.dmg`**), **`HWTW-macOS.app.zip`** (same bundle as a zip), and **`HWTW-macOS.pkg`** (installs **`HWTW.app`** into **`/Applications`**). Signing applies to the **`.app`** before those artifacts are produced when secrets are set. **`SHA256SUMS-macos.txt`** lists hashes for **`.dmg`**, **`.zip`**, and **`.pkg`**.
 
 ## What you need (for a **signed & notarized** DMG)
 
