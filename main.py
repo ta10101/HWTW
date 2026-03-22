@@ -29,11 +29,14 @@ psutil = None  # set in bootstrap_requirements()
 _SINGLE_INSTANCE_MUTEX: object | None = None
 _SINGLE_INSTANCE_LOCK_FD: int | None = None
 
-__version__ = "1.2.10"
+__version__ = "1.2.11"
 APP_SHORT = "HWTW"
 
 # Shown once per version after upgrade (see _show_version_news_if_needed).
 WHATS_NEW_BY_VERSION: dict[str, str] = {
+    "1.2.11": (
+        "• **Windows MSI:** adds a **Start Menu** shortcut under **HWTW** — the installer still does **not** auto-launch the app; open **HWTW** from the menu or run **`C:\\Program Files\\HWTW\\HWTW.exe`**."
+    ),
     "1.2.10": (
         "• **Windows / Linux / macOS:** Only **one** copy of HWTW can run at a time. "
         "If the app seems slow to start (SmartScreen, first-run dialogs), **wait** — "

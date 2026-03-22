@@ -60,7 +60,8 @@ You use a normal **Windows PC** and want the simplest path: a downloaded **`.exe
 ### Steps (do in order)
 
 1. **Download `HWTW.exe` or `HWTW.msi`**  
-   Open **[Releases](https://github.com/ta10101/HWTW/releases)** → download **`HWTW.exe`** (portable) **or** **`HWTW.msi`** (64-bit installer: installs under Program Files). You do **not** need Python on Windows for either build.
+   Open **[Releases](https://github.com/ta10101/HWTW/releases)** → download **`HWTW.exe`** (portable) **or** **`HWTW.msi`** (64-bit installer: installs under **`C:\Program Files\HWTW\`**). You do **not** need Python on Windows for either build.  
+   **After the MSI finishes:** it does **not** open the app by design — press the **Windows** key, type **`HWTW`**, choose **HWTW** (Start Menu → **HWTW** folder from **v1.2.11+**), or run **`C:\Program Files\HWTW\HWTW.exe`** in File Explorer.
 
 2. **Install Docker Desktop** (one time, separate from HWTW)  
    Install from Docker’s site: **[Windows install guide](https://docs.docker.com/desktop/setup/install/windows-install/)**.  

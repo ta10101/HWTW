@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.11] - 2026-03-22
+
+### Added
+
+- **Windows MSI (WiX):** **Start Menu** shortcut (**All users** → **HWTW** → **HWTW**) so installs are easier to find; **`HWTW.exe`** remains at **`C:\Program Files\HWTW\HWTW.exe`**.
+
 ## [1.2.10] - 2026-03-22
 
 ### Fixed

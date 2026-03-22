@@ -19,6 +19,7 @@
     <MediaTemplate EmbedCab="yes" />
     <Feature Id="MainFeature" Title="HWTW" Level="1">
       <ComponentGroupRef Id="ProductComponents" />
+      <ComponentRef Id="cmpStartMenuShortcut" />
     </Feature>
   </Product>
 
@@ -26,6 +27,10 @@
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFiles64Folder">
         <Directory Id="INSTALLFOLDER" Name="HWTW" />
+      </Directory>
+      <!-- All users → Start Menu so the MSI visibly “does something” after install (app is not auto-started). -->
+      <Directory Id="CommonProgramsFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="HWTW" />
       </Directory>
     </Directory>
   </Fragment>
@@ -39,5 +44,26 @@
         <File Id="filRequirements" Source="$(var.ReqTxt)" KeyPath="yes" />
       </Component>
     </ComponentGroup>
+  </Fragment>
+
+  <Fragment>
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="cmpStartMenuShortcut" Guid="*">
+        <Shortcut
+            Id="scHWTWStartMenu"
+            Name="HWTW"
+            Description="Holo Wind Tunnel GUI"
+            Target="[#filHWTWexe]"
+            WorkingDirectory="INSTALLFOLDER" />
+        <RemoveFolder Id="RemoveHWTWProgramsFolder" On="uninstall" />
+        <RegistryValue
+            Root="HKLM"
+            Key="Software\ta10101\HWTW"
+            Name="StartMenuShortcut"
+            Type="integer"
+            Value="1"
+            KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
   </Fragment>
 </Wix>
