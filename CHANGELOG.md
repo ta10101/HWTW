@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **README:** Windows MSI bullet aligned with **INSTALL.md** (icon **v1.2.13+**, uninstall shortcut **v1.2.14+**).
 
+## [1.2.17] - 2026-03-22
+
+### Fixed
+
+- **Windows MSI (WiX 3):** **`WixUILicenseRtf`** moved into a **`Fragment`** so **`Package`** is again the **first** child of **`Product`** (WiX requires **`Package`** first; **`WixVariable`** before **`Package`** broke **candle**).
+
 ## [1.2.16] - 2026-03-22
 
 ### Fixed
