@@ -10,7 +10,7 @@ HWTW helps you run the **Holochain Wind Tunnel** runner with Docker.
 - **Linux without `apt`** (Fedora, Arch, …) — install Python 3.10+, venv, Tk, Docker yourself; then `python3 main.py`.  
 - **Chromebook without Linux (Crostini)** — enable **Linux** in Settings first.  
 - **Windows before 10** — unsupported.  
-- **Signed macOS `.app` in GitHub Releases** — use **`install-macos.sh`** or **`python3 main.py`** (see macOS section).  
+- **Apple notarization without a paid Developer account** — unsigned **`HWTW-macOS-unsigned.dmg`** may need **Right-click → Open**; see [MACOS_SIGNING.md](MACOS_SIGNING.md) for signed builds.  
 - **Docker / WSL** — never bundled; install separately.  
 - **Strict school/work PCs** — may block Docker or Linux.  
 - **Chromebook / macOS + Docker + Wind Tunnel** — privileged / host-network containers may **not** match bare Linux; see **Holo’s official guide**.  
@@ -53,15 +53,18 @@ Use **Python 3.10+**.
 
 ## macOS (Intel or Apple Silicon)
 
-There is **no** `.app` in Releases — use Terminal and Python.
+### Recommended (prebuilt app)
 
-### Before you start
+| Step | What to do |
+| ---- | ---------- |
+| 1 | Download **`HWTW-macOS.dmg`** or **`HWTW-macOS-unsigned.dmg`** from **[GitHub Releases](https://github.com/ta10101/HWTW/releases)**. |
+| 2 | Open the DMG, drag **HWTW** to **Applications**, launch the app. |
+| 3 | If macOS blocks an unsigned build: **Right-click → Open**, or **System Settings → Privacy & Security**. |
+| 4 | Install **[Docker Desktop for Mac](https://docs.docker.com/desktop/setup/install/mac-install/)** and keep it running for Wind Tunnel. |
 
-- **Python 3.10+** with **tkinter**: [python.org macOS](https://www.python.org/downloads/macos/) or `brew install python@3.12`.  
-- Test: `python3 -c "import tkinter"`.  
-- **Docker Desktop for Mac** for containers: [Docker Mac install](https://docs.docker.com/desktop/setup/install/mac-install/).
+### Optional: Terminal + Python (developers)
 
-### Recommended
+**Before you start:** **Python 3.10+** with **tkinter** ([python.org macOS](https://www.python.org/downloads/macos/) or `brew install python@3.12`); test `python3 -c "import tkinter"`. **Docker Desktop** as above.
 
 ```bash
 git clone https://github.com/ta10101/HWTW.git
@@ -76,8 +79,8 @@ bash install-macos.sh
 
 **Checklist**
 
-- [ ] `import tkinter` works  
-- [ ] **`install-macos.sh`** done (or you use **`python3 main.py`**)  
+- [ ] DMG from Releases **or** `import tkinter` works for script/source path  
+- [ ] **`install-macos.sh`** done if not using the DMG (or you use **`python3 main.py`**)  
 - [ ] Docker Desktop **running** for Wind Tunnel  
 
 **Install / fix Docker** in the app can run **`brew install --cask docker`** if Homebrew is installed.

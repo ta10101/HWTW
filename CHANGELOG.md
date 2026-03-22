@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-03-22
+
+### Added
+
+- **macOS release artifacts:** GitHub Actions **`macos-dmg`** job builds **`HWTW.app`** with PyInstaller and wraps **`HWTW-macOS.dmg`** (signed + notarized when repo **secrets** are set) or **`HWTW-macOS-unsigned.dmg`** otherwise; **`packaging/build-macos-dmg.sh`**, **`packaging/macos-entitlements.plist`**, and **[MACOS_SIGNING.md](MACOS_SIGNING.md)** for maintainers.
+
+### Changed
+
+- **README / INSTALL:** Releases now include a macOS **`.dmg`**; scripts / **`python3 main.py`** remain documented as alternatives.
+
 ## [1.2.0] - 2026-03-22
 
 ### Added
