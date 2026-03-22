@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **README:** Windows MSI bullet aligned with **INSTALL.md** (icon **v1.2.13+**, uninstall shortcut **v1.2.14+**).
 
+## [1.2.16] - 2026-03-22
+
+### Fixed
+
+- **Windows MSI (CI / WiX 3):** **`WixVariable`** for **`WixUILicenseRtf`** moved under **`Product`** — **candle** no longer fails with **CNDL0005** (*unexpected child element ‘WixVariable’ under ‘Wix’*).
+
 ## [1.2.15] - 2026-03-22
 
 ### Fixed

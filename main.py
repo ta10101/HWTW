@@ -29,11 +29,14 @@ psutil = None  # set in bootstrap_requirements()
 _SINGLE_INSTANCE_MUTEX: object | None = None
 _SINGLE_INSTANCE_LOCK_FD: int | None = None
 
-__version__ = "1.2.15"
+__version__ = "1.2.16"
 APP_SHORT = "HWTW"
 
 # Shown once per version after upgrade (see _show_version_news_if_needed).
 WHATS_NEW_BY_VERSION: dict[str, str] = {
+    "1.2.16": (
+        "• **Windows MSI:** Installer build fix (**WiX 3**): license RTF variable is declared under **Product** so **candle** succeeds — same app behavior as **v1.2.15**."
+    ),
     "1.2.15": (
         "• **Windows:** **Docker** / **WSL** status checks no longer flash **console** windows and no longer **freeze** the UI — subprocesses use **CREATE_NO_WINDOW**, and heavy polls run in a **background thread**."
     ),

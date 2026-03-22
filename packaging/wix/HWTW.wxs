@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- WiX 3.x — candle/light + WixUIExtension. Variables: ProductVersion, HwtwExe, ReqTxt, IconIco -->
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <WixVariable Id="WixUILicenseRtf" Value="packaging\wix\License.rtf" />
   <Product
       Id="*"
       Name="HWTW (Holo Wind Tunnel GUI)"
@@ -9,6 +8,8 @@
       Version="$(var.ProductVersion)"
       Manufacturer="https://github.com/ta10101/HWTW"
       UpgradeCode="A8F9E7D6-5C4B-3A21-9F8E-7D6C5B4A3F2E">
+    <!-- WiX 3: WixVariable must be under Product or Fragment, not under Wix (CNDL0005). -->
+    <WixVariable Id="WixUILicenseRtf" Value="packaging\wix\License.rtf" />
     <Package
         InstallerVersion="500"
         Compressed="yes"
