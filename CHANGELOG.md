@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.4] - 2026-03-22
+
+### Added
+
+- **Holochain runner status:** readonly field with **full URL** `https://wind-tunnel-runner-status.holochain.org/status?hostname=…` (updates with your node name), plus **Copy URL**, **Open**, and **Help → Holochain runner status page…**.
+
+### Changed
+
+- **Linux `.venv`:** before recreating a broken/missing-deps environment, **remove the existing `.venv` folder** so pip does not layer on a stale tree. A working `.venv` is still reused (fast restart).
+
 ## [1.1.3] - 2026-03-22
 
 ### Fixed
