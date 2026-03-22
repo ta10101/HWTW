@@ -44,10 +44,22 @@ Apply these on **github.com/ta10101/HWTW** (or your fork) to reduce tampering an
    - Enable **Secret scanning** (and push protection if available on your plan).
 
 5. **Secrets**
-   - This project’s workflows do **not** require repository secrets for build/release. Do not add tokens unless you have a clear need; never commit secrets into the tree.
+   - **Windows / unsigned macOS** builds do not need repository secrets. **Signed macOS** releases use Apple signing secrets — see [MACOS_SIGNING.md](MACOS_SIGNING.md). Never commit secrets into the tree.
 
 6. **Collaborators**
    - Only add people who need write access; use **Read** or **Triage** for contributors who do not need to push to `main`.
+
+## Application behavior (threat model)
+
+HWTW is a **local desktop GUI**: it does **not** open a network port or accept remote connections.
+
+- **Subprocesses** run with **`shell=False`** and **argument lists** (no shell string for `docker`, `winget`, etc.), which avoids common injection bugs when passing the hostname into `docker run`.
+- **Wind Tunnel** follows Holo’s guide: the runner container uses **`--privileged`** and **`--net=host`** inside Docker’s Linux environment. Users must **confirm** before start. That is **by design** for participation in Wind Tunnel, not a bug — it is powerful and should only be run when the operator intends it.
+- **Hostname** values are validated (DNS-like ASCII) before `docker run` or copying the command line; malformed values in `hwtw_config.json` are dropped on load.
+- **Browser links** are opened only for **`http:`** / **`https:`** URLs with a host (blocks `javascript:`, `file:`, etc. if a string were ever malformed).
+- **Container IDs** from `docker ps` are checked to look like hex IDs before `docker stop` / `docker logs`.
+
+Reducing risk further on the **machine** still means: keep **Docker Desktop** updated, do not run random containers alongside Wind Tunnel unless you trust them, and download **`HWTW.exe` / `.dmg`** only from **official [Releases](https://github.com/ta10101/HWTW/releases)** for this repo.
 
 ## Personal / machine data
 

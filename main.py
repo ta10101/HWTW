@@ -8,10 +8,11 @@ from __future__ import annotations
 import importlib
 import json
 import os
+import re
 import shlex
 import shutil
 import sysconfig
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 from collections import deque
 from pathlib import Path
 import subprocess
@@ -23,7 +24,7 @@ from tkinter import filedialog, messagebox, scrolledtext, ttk
 
 psutil = None  # set in bootstrap_requirements()
 
-__version__ = "1.2.2"
+__version__ = "1.2.3"
 APP_SHORT = "HWTW"
 
 IMAGE = "ghcr.io/holochain/wind-tunnel-runner:latest"
@@ -43,6 +44,38 @@ CONFIG_NAME = "hwtw_config.json"
 MIN_RAM_BYTES = 8 * 1024**3
 MIN_DISK_FREE_BYTES = 10 * 1024**3
 DEFAULT_LOG_TAIL = 200
+
+# DNS hostname subset (RFC 1123–style): avoids odd characters reaching `docker --hostname` or URLs.
+_HOSTNAME_LABEL_RE = re.compile(r"^(?:[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)$")
+_DOCKER_CONTAINER_ID_RE = re.compile(r"^[0-9a-f]{12,64}$", re.IGNORECASE)
+
+
+def validate_wind_tunnel_hostname(h: str) -> tuple[bool, str]:
+    """
+    Return (ok, error_message). Only ASCII letters, digits, dots, and hyphens; DNS-like labels.
+    Prevents spaces, shell metacharacters, and newlines from being passed to Docker or copied into commands.
+    """
+    h = (h or "").strip()
+    if not h:
+        return False, "Hostname is empty."
+    if len(h) > 253:
+        return False, "Hostname is too long (max 253 characters)."
+    for label in h.split("."):
+        if len(label) > 63:
+            return False, "Each hostname part (between dots) must be at most 63 characters."
+        if not _HOSTNAME_LABEL_RE.match(label):
+            return (
+                False,
+                "Use only letters, numbers, hyphens, and optional dots — e.g. nomad-client-yourname-01. "
+                "Hyphens cannot be at the start or end of a part.",
+            )
+    return True, ""
+
+
+def _is_probable_docker_container_id(s: str) -> bool:
+    """True if s looks like a docker ps -q line (hex id); ignores attacker-controlled-looking values."""
+    t = (s or "").strip()
+    return bool(t and _DOCKER_CONTAINER_ID_RE.match(t))
 
 
 def _disk_usage_paths() -> list[str]:
@@ -93,14 +126,30 @@ def load_config() -> dict:
     try:
         with open(config_path(), encoding="utf-8") as f:
             data = json.load(f)
-            return data if isinstance(data, dict) else {}
+            if not isinstance(data, dict):
+                return {}
+            hn = data.get("hostname")
+            if isinstance(hn, str) and hn.strip():
+                ok, _ = validate_wind_tunnel_hostname(hn.strip())
+                if not ok:
+                    data = {k: v for k, v in data.items() if k != "hostname"}
+                    try:
+                        with open(config_path(), "w", encoding="utf-8") as wf:
+                            json.dump(data, wf, indent=2)
+                    except OSError:
+                        pass
+            return data
     except (OSError, json.JSONDecodeError, TypeError):
         return {}
 
 
 def save_config(**kwargs) -> None:
     cfg = load_config()
-    cfg.update({k: v for k, v in kwargs.items() if v is not None})
+    for k, v in kwargs.items():
+        if v is None:
+            cfg.pop(k, None)
+        else:
+            cfg[k] = v
     try:
         with open(config_path(), "w", encoding="utf-8") as f:
             json.dump(cfg, f, indent=2)
@@ -517,8 +566,15 @@ def bootstrap_requirements(parent: tk.Misc | None, *, force_install: bool = Fals
 
 
 def _open_url(url: str) -> None:
+    """Open only http(s) URLs with a host — avoids file:, javascript:, etc. if a string is malformed."""
     import webbrowser
 
+    try:
+        p = urlparse((url or "").strip())
+        if p.scheme not in ("http", "https") or not p.netloc:
+            return
+    except Exception:
+        return
     webbrowser.open(url)
 
 
@@ -850,11 +906,15 @@ def run_first_run_setup() -> None:
 
 
 def docker_run_args(hostname: str) -> list[str]:
+    hn = (hostname or "").strip()
+    ok, _ = validate_wind_tunnel_hostname(hn)
+    if not ok:
+        raise ValueError("invalid hostname for docker run")
     return [
         "docker",
         "run",
         "--hostname",
-        hostname,
+        hn,
         "--cgroupns=host",
         "--net=host",
         "--privileged",
@@ -1626,8 +1686,10 @@ class WindTunnelApp(tk.Tk):
 
     def destroy(self) -> None:
         try:
+            hn = self.var_hostname.get().strip()
+            ok, _ = validate_wind_tunnel_hostname(hn)
             save_config(
-                hostname=self.var_hostname.get().strip(),
+                hostname=hn if ok else None,
                 dark_theme=self._var_dark.get(),
                 log_tail=int(self.var_log_tail.get()),
             )
@@ -1763,8 +1825,12 @@ class WindTunnelApp(tk.Tk):
 
     def on_copy_run_command(self) -> None:
         hn = self.var_hostname.get().strip()
-        if not hn or hn == "nomad-client-":
+        if not hn:
             messagebox.showwarning("Hostname", "Set a full hostname first, e.g. nomad-client-yourname-01", parent=self)
+            return
+        ok, msg = validate_wind_tunnel_hostname(hn)
+        if not ok:
+            messagebox.showerror("Invalid hostname", msg, parent=self)
             return
         cmd = format_docker_run_command(hn)
         self.clipboard_clear()
@@ -1774,8 +1840,12 @@ class WindTunnelApp(tk.Tk):
 
     def on_start_runner(self) -> None:
         hn = self.var_hostname.get().strip()
-        if not hn or hn == "nomad-client-":
+        if not hn:
             messagebox.showwarning("Hostname", "Set a full hostname, e.g. nomad-client-yourname-01")
+            return
+        ok, msg = validate_wind_tunnel_hostname(hn)
+        if not ok:
+            messagebox.showerror("Invalid hostname", msg, parent=self)
             return
         if not hn.startswith("nomad-client-"):
             if not messagebox.askyesno(
@@ -1808,7 +1878,11 @@ class WindTunnelApp(tk.Tk):
                     ["docker", "ps", "--filter", f"ancestor={IMAGE}", "-q"],
                     timeout=30,
                 )
-                ids = [x.strip() for x in (out or "").splitlines() if x.strip()]
+                ids = [
+                    x.strip()
+                    for x in (out or "").splitlines()
+                    if x.strip() and _is_probable_docker_container_id(x.strip())
+                ]
                 if not ids:
                     self.after(0, lambda: self.log_line("No running wind-tunnel-runner container found."))
                     return
@@ -1841,7 +1915,11 @@ class WindTunnelApp(tk.Tk):
                     ["docker", "ps", "-q", "--filter", f"ancestor={IMAGE}", "--filter", "status=running"],
                     timeout=30,
                 )
-                cids = [x.strip() for x in (out or "").splitlines() if x.strip()]
+                cids = [
+                    x.strip()
+                    for x in (out or "").splitlines()
+                    if x.strip() and _is_probable_docker_container_id(x.strip())
+                ]
                 if not cids:
                     self.after(
                         0,

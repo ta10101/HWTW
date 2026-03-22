@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.3] - 2026-03-22
+
+### Security
+
+- **Hostname validation** (DNS-like ASCII) before **Start** / **Copy docker run**; invalid values are removed from **`hwtw_config.json`** on load and not re-saved on exit.
+- **`_open_url`:** only opens **`http`/`https`** URLs with a host.
+- **`docker stop` / `docker logs`:** only pass container IDs that match expected **hex** id shape from `docker ps` output.
+- **[SECURITY.md](SECURITY.md):** application threat model and maintainer note on **macOS signing** secrets.
+
 ## [1.2.2] - 2026-03-22
 
 ### Changed
