@@ -138,6 +138,10 @@ Ship **`dist/HWTW.exe`** and **`dist/requirements.txt`** together.
 
 GitHub Actions runs on push and pull requests: install dependencies and `python -m py_compile main.py` on **ubuntu-latest** and **windows-latest** (no self-hosted runner required).
 
+## Security
+
+Reporting and recommended GitHub hardening (branch rules, Actions, Dependabot): see [SECURITY.md](SECURITY.md).
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
