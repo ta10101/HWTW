@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- WiX 3.x — candle/light + WixUIExtension. Variables: ProductVersion, HwtwExe, ReqTxt, IconIco -->
+<!-- WiX 3.x: candle/light + WixUIExtension. Variables: ProductVersion, HwtwExe, ReqTxt, IconIco -->
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <Product
       Id="*"
@@ -19,7 +19,7 @@
     <!-- AllowSameVersionUpgrades: same ProductVersion (e.g. rebuilt 1.2.19 MSI) can replace files; otherwise WiX blocks with "newer already installed". -->
     <MajorUpgrade
         AllowSameVersionUpgrades="yes"
-        DowngradeErrorMessage="A newer version of HWTW is already installed. Uninstall it in Settings → Apps (or Start → HWTW → Uninstall HWTW) if you need to install an older MSI." />
+        DowngradeErrorMessage="A newer version of HWTW is already installed. Uninstall it in Settings, then Apps (or Start, then HWTW, then Uninstall HWTW) if you need to install an older MSI." />
     <MediaTemplate EmbedCab="yes" />
     <Icon Id="IconHWTW" SourceFile="$(var.IconIco)" />
     <Property Id="ARPPRODUCTICON" Value="IconHWTW" />
@@ -55,7 +55,7 @@
       <Directory Id="CommonProgramsFolder">
         <Directory Id="ApplicationProgramsFolder" Name="HWTW" />
       </Directory>
-      <!-- Must appear under TARGETDIR; DirectoryRef alone does not define the row → LGHT0094. -->
+      <!-- Must appear under TARGETDIR; DirectoryRef alone does not define the row (LGHT0094). -->
       <Directory Id="CommonDesktopFolder" />
     </Directory>
   </Fragment>
@@ -81,7 +81,7 @@
             Target="[#filHWTWexe]"
             WorkingDirectory="INSTALLFOLDER"
             Icon="IconHWTW" />
-        <!-- Runs Windows Installer remove for this product (same as Settings → Apps → Uninstall). -->
+        <!-- Runs Windows Installer remove for this product (same as Settings, Apps, Uninstall). -->
         <Shortcut
             Id="scUninstallHWTW"
             Name="Uninstall HWTW"

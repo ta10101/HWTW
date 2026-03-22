@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-03-23
+
+### Fixed
+
+- **Windows MSI (WiX 3):** Remove Unicode characters (e.g. **→**, **—**) from **`HWTW.wxs`** strings and comments so the default MSI code page **1252** is satisfied — fixes **LGHT0311**.
+
 ## [1.3.1] - 2026-03-23
 
 ### Fixed
