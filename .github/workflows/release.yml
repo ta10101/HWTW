@@ -48,22 +48,36 @@ jobs:
         with:
           python-version: "3.12"
 
+      # Tags before ~v1.2.13 have no packaging/icons/; pull icon from default branch so PyInstaller / WiX still work.
+      - name: Ensure HWTW.ico (old tags)
+        shell: pwsh
+        env:
+          REPO: ${{ github.repository }}
+        run: |
+          $icon = Join-Path $env:GITHUB_WORKSPACE "packaging/icons/HWTW.ico"
+          if (Test-Path -LiteralPath $icon) {
+            Write-Host "Icon present in checkout."
+            exit 0
+          }
+          Write-Host "::notice::HWTW.ico missing on this ref — downloading from main (same file as current branding)."
+          $dir = Split-Path $icon -Parent
+          New-Item -ItemType Directory -Force -Path $dir | Out-Null
+          $url = "https://raw.githubusercontent.com/$env:REPO/main/packaging/icons/HWTW.ico"
+          Invoke-WebRequest -Uri $url -OutFile $icon -MaximumRetryCount 3 -RetryIntervalSec 2
+          if (-not (Test-Path -LiteralPath $icon) -or ((Get-Item -LiteralPath $icon).Length -lt 32)) {
+            throw "Could not download valid icon from $url (private repo? network?)"
+          }
+
       - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install pyinstaller psutil "sv-ttk>=2.6.0"
 
-      # Absolute --icon: PyInstaller anchors relative paths to CONF['specpath'], which can differ during the EXE
-      # phase on Windows runners → FileNotFoundError for packaging\icons\HWTW.ico. Tags before v1.2.13 have no icon.
+      # Absolute --icon avoids PyInstaller resolving relative paths against a shifting specpath on Windows.
       - name: Build executable
         shell: pwsh
         run: |
           $icon = Join-Path $env:GITHUB_WORKSPACE "packaging/icons/HWTW.ico"
-          if (-not (Test-Path -LiteralPath $icon)) {
-            Write-Host "::error::Missing $icon — this tag/commit may predate packaging/icons/HWTW.ico (added v1.2.13+)."
-            Get-ChildItem -Path (Join-Path $env:GITHUB_WORKSPACE "packaging") -Recurse -ErrorAction SilentlyContinue
-            exit 1
-          }
           pyinstaller --onefile --windowed --name HWTW `
             --icon $icon `
             --collect-all sv_ttk --collect-all psutil `
@@ -91,7 +105,6 @@ jobs:
           $msiVer = "$($parts[0]).$($parts[1]).$($parts[2]).0"
           Write-Host "MSI ProductVersion=$msiVer"
           $icon = Join-Path $env:GITHUB_WORKSPACE "packaging/icons/HWTW.ico"
-          if (-not (Test-Path -LiteralPath $icon)) { Write-Error "Missing $icon"; exit 1 }
           New-Item -ItemType Directory -Force -Path obj | Out-Null
           & candle.exe -nologo -arch x64 -ext WixUIExtension `
             "-dProductVersion=$msiVer" `
@@ -176,6 +189,20 @@ jobs:
 
       - name: Verify Tcl/Tk
         run: python -c "import tkinter"
+
+      - name: Ensure HWTW.ico (old tags)
+        env:
+          REPO: ${{ github.repository }}
+        run: |
+          set -eux
+          ICON="packaging/icons/HWTW.ico"
+          if [ -f "$ICON" ]; then echo "Icon present."; exit 0; fi
+          echo "::notice::HWTW.ico missing on this ref — downloading from main."
+          mkdir -p packaging/icons
+          curl -fsSL --retry 3 --retry-delay 2 \
+            "https://raw.githubusercontent.com/${REPO}/main/packaging/icons/HWTW.ico" \
+            -o "$ICON"
+          test -s "$ICON"
 
       - name: Install build dependencies
         run: |
