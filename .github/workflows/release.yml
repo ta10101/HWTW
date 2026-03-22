@@ -40,9 +40,37 @@ jobs:
       - name: Copy requirements for sidecar install
         run: copy requirements.txt dist\
 
+      - name: Install WiX Toolset v3 (MSI)
+        run: |
+          $uri = "https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314-binaries.zip"
+          Invoke-WebRequest $uri -OutFile "$env:RUNNER_TEMP\wix.zip"
+          Expand-Archive "$env:RUNNER_TEMP\wix.zip" -DestinationPath "$env:RUNNER_TEMP\wix" -Force
+          Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP\wix"
+
+      - name: Build HWTW.msi
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $v = $tag.TrimStart('v')
+          $parts = @($v.Split('.'))
+          while ($parts.Count -lt 3) { $parts += '0' }
+          $msiVer = "$($parts[0]).$($parts[1]).$($parts[2]).0"
+          Write-Host "MSI ProductVersion=$msiVer"
+          New-Item -ItemType Directory -Force -Path obj | Out-Null
+          & candle.exe -nologo -arch x64 `
+            "-dProductVersion=$msiVer" `
+            "-dHwtwExe=dist\HWTW.exe" `
+            "-dReqTxt=dist\requirements.txt" `
+            -out obj\ `
+            packaging\wix\HWTW.wxs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & light.exe -nologo -sw1076 -out dist\HWTW.msi obj\HWTW.wixobj
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Get-Item dist\HWTW.msi | Format-List *
+
       - name: Write SHA256SUMS.txt (Windows assets)
         run: |
-          python -c "import hashlib, pathlib; d=pathlib.Path('dist'); g=lambda n: hashlib.sha256(d.joinpath(n).read_bytes()).hexdigest(); t='\n'.join([g('HWTW.exe')+'  HWTW.exe', g('requirements.txt')+'  requirements.txt'])+'\n'; d.joinpath('SHA256SUMS.txt').write_text(t, encoding='utf-8'); print(t)"
+          python -c "import hashlib, pathlib; d=pathlib.Path('dist'); g=lambda n: hashlib.sha256(d.joinpath(n).read_bytes()).hexdigest(); names=['HWTW.exe','requirements.txt','HWTW.msi']; t='\n'.join([g(n)+'  '+n for n in names])+'\n'; d.joinpath('SHA256SUMS.txt').write_text(t, encoding='utf-8'); print(t)"
 
       - name: Create GitHub Release (Windows)
         uses: softprops/action-gh-release@v2
@@ -50,6 +78,7 @@ jobs:
           generate_release_notes: true
           files: |
             dist/HWTW.exe
+            dist/HWTW.msi
             dist/requirements.txt
             dist/SHA256SUMS.txt
 

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- WiX 3.x — built in CI with candle/light. Variables: ProductVersion, HwtwExe, ReqTxt -->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product
+      Id="*"
+      Name="HWTW (Holo Wind Tunnel GUI)"
+      Language="1033"
+      Version="$(var.ProductVersion)"
+      Manufacturer="https://github.com/ta10101/HWTW"
+      UpgradeCode="A8F9E7D6-5C4B-3A21-9F8E-7D6C5B4A3F2E">
+    <Package
+        InstallerVersion="500"
+        Compressed="yes"
+        InstallScope="perMachine"
+        Platform="x64"
+        Description="Desktop helper for Holochain Wind Tunnel (Docker)"
+        Comments="Not affiliated with Holo or Holochain Foundation." />
+    <MajorUpgrade DowngradeErrorMessage="A newer version of HWTW is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+    <Feature Id="MainFeature" Title="HWTW" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+    </Feature>
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="INSTALLFOLDER" Name="HWTW" />
+      </Directory>
+    </Directory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <Component Id="cmpHWTWexe" Guid="*">
+        <File Id="filHWTWexe" Source="$(var.HwtwExe)" KeyPath="yes" />
+      </Component>
+      <Component Id="cmpRequirements" Guid="*">
+        <File Id="filRequirements" Source="$(var.ReqTxt)" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>

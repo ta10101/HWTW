@@ -16,7 +16,7 @@ Desktop app for setting up a **Holo Edge Node** as a [Holochain Wind Tunnel](htt
 
 **Everyone:** Wind Tunnel needs **Docker** running. HWTW only drives Docker — it does not replace Docker.
 
-**Official downloads:** Get **`HWTW.exe`**, the macOS **`.dmg`**, and **`requirements.txt`** only from **[GitHub Releases](https://github.com/ta10101/HWTW/releases)** for this repository (`ta10101/HWTW`). Verify **`HWTW.exe`** with **`SHA256SUMS.txt`**; the DMG hash is in **`SHA256SUMS-macos-dmg.txt`** when a Mac build is attached.
+**Official downloads:** From **[GitHub Releases](https://github.com/ta10101/HWTW/releases)** (`ta10101/HWTW`) only: **Windows** — portable **`HWTW.exe`** or **`HWTW.msi`** (x64 installer; adds **`HWTW.exe`** + **`requirements.txt`** under Program Files); **macOS** — **`HWTW-macOS.dmg`** or **`HWTW-macOS-unsigned.dmg`**. Verify with **`SHA256SUMS.txt`** (exe, requirements, MSI) and **`SHA256SUMS-macos-dmg.txt`** when present.
 
 **One-page install only:** **[INSTALL.md](INSTALL.md)** (Windows, macOS, Linux — easy to print or share).
 
@@ -44,8 +44,8 @@ You use a normal **Windows PC** and want the simplest path: a downloaded **`.exe
 
 ### Steps (do in order)
 
-1. **Download `HWTW.exe`**  
-   Open **[Releases](https://github.com/ta10101/HWTW/releases)** → download the latest **`HWTW.exe`**. The release build bundles what the GUI needs; you do **not** need Python on Windows for that file.
+1. **Download `HWTW.exe` or `HWTW.msi`**  
+   Open **[Releases](https://github.com/ta10101/HWTW/releases)** → download **`HWTW.exe`** (portable) **or** **`HWTW.msi`** (64-bit installer: installs under Program Files). You do **not** need Python on Windows for either build.
 
 2. **Install Docker Desktop** (one time, separate from HWTW)  
    Install from Docker’s site: **[Windows install guide](https://docs.docker.com/desktop/setup/install/windows-install/)**.  
@@ -296,7 +296,7 @@ The links in this README use **`https://github.com/ta10101/HWTW`**. A **404** fr
 
 ## Release binaries (CI)
 
-Pushing a **version tag** `v*` builds **Windows** (**`HWTW.exe`**, **`requirements.txt`**, **`SHA256SUMS.txt`**) into a **GitHub Release** first, then **macOS** attaches the **`.dmg`** and **`SHA256SUMS-macos-dmg.txt`** (see [MACOS_SIGNING.md](MACOS_SIGNING.md)). **Linux** still uses the install scripts or **`python3 main.py`** from this repo.
+Pushing a **version tag** `v*` builds **Windows** (**`HWTW.exe`**, **`HWTW.msi`** via WiX, **`requirements.txt`**, **`SHA256SUMS.txt`**) into a **GitHub Release** first, then **macOS** attaches the **`.dmg`** and **`SHA256SUMS-macos-dmg.txt`** (see [MACOS_SIGNING.md](MACOS_SIGNING.md)). **Linux** still uses the install scripts or **`python3 main.py`** from this repo.
 
 ## Publishing on GitHub
 
@@ -315,7 +315,7 @@ git push -u origin main
 
 1. Bump **`__version__`** in `main.py` and **`CHANGELOG.md`**, commit and push.  
 2. `git tag -a v1.1.1 -m "Release v1.1.1"` && `git push origin v1.1.1`  
-3. Check **Releases** for **`HWTW.exe`**, **`requirements.txt`**, and the macOS **`.dmg`**.  
+3. Check **Releases** for **`HWTW.exe`**, **`HWTW.msi`**, **`requirements.txt`**, and the macOS **`.dmg`**.  
 4. **Optional (maintainers):** configure **[MACOS_SIGNING.md](MACOS_SIGNING.md)** secrets so the macOS artifact is **signed and notarized** instead of **`HWTW-macOS-unsigned.dmg`**.
 
 ### Local PyInstaller build (optional)

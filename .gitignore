@@ -30,6 +30,8 @@ id_ed25519.pub
 # PyInstaller / packaging
 build/
 dist/
+obj/
+*.wixobj
 *.spec
 
 # Test / coverage

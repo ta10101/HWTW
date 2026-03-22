@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.7] - 2026-03-22
+
+### Added
+
+- **Windows MSI:** **`HWTW.msi`** built in Release CI with **WiX Toolset v3** (`packaging/wix/HWTW.wxs`) — x64, per-machine install to Program Files with **`HWTW.exe`** + **`requirements.txt`**. **`SHA256SUMS.txt`** lists **`HWTW.msi`** alongside the exe.
+
 ## [1.2.6] - 2026-03-22
 
 ### Fixed

@@ -19,7 +19,7 @@ We will try to acknowledge reports within a few business days.
 
 ## Supply chain — releases
 
-`HWTW.exe`, macOS **`.dmg`**, `requirements.txt`, **`SHA256SUMS.txt`** (Windows files), and **`SHA256SUMS-macos-dmg.txt`** (when present) on GitHub **Releases** are produced by the **Release** workflow. Compare the tag to the workflow run and commit SHA when verifying binaries; use `sha256sum -c SHA256SUMS.txt` on Linux or compare hashes manually.
+`HWTW.exe`, **`HWTW.msi`**, macOS **`.dmg`**, `requirements.txt`, **`SHA256SUMS.txt`** (Windows files + MSI), and **`SHA256SUMS-macos-dmg.txt`** (when present) on GitHub **Releases** are produced by the **Release** workflow. Compare the tag to the workflow run and commit SHA when verifying binaries; use `sha256sum -c SHA256SUMS.txt` on Linux or compare hashes manually.
 
 ## Maintainer checklist (GitHub settings)
 
