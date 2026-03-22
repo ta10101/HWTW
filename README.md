@@ -44,7 +44,7 @@ If **Latest** still points at an old version while newer **tags** exist on the r
 | **Chromebook without Linux** | There is **no** Chrome OS or Android build. **Linux (Crostini)** must be turned on in Settings. |
 | **Windows older than 10** | Not a supported target; use Windows **10/11**, another PC, or a VM. |
 | **Docker / WSL inside the app** | **Docker** is always a **separate** install. On Windows, **WSL 2** is separate too — HWTW only **starts** or **guides** you; it does not bundle the engine. |
-| **Managed / locked-down devices** | Schools and employers often block Docker, Linux, or admin installs — we can’t bypass policy. |
+| **Managed / locked-down devices** | Schools and employers often block Docker, Linux, or admin installs — we can’t bypass policy. **MSI** installs are often blocked by **Group Policy / AppLocker** (message like *administrator has set policies that prevent this installation*); use **`HWTW.exe`** on a personal PC or ask IT. |
 | **Chromebook + Docker + Wind Tunnel** | Even with Linux enabled, **Docker in Crostini** is often **limited**; the runner uses **privileged** / **host networking** flags that **may not work** on every device. Check Holo’s official guidance for **supported** setups. |
 | **macOS + Docker + Wind Tunnel** | Containers run in **Docker Desktop’s Linux VM**. **`--privileged` / `--net=host`** apply inside that VM, not on the Mac host — behavior can differ from bare Linux. Confirm with **Holo’s guide** whether your use case is supported. |
 | **Official Holo support** | This repo is **not** from Holo/Holochain. Participation rules, eligibility, and infrastructure are per **official Holo docs**. |
@@ -81,6 +81,18 @@ You use a normal **Windows PC** and want the simplest path: a downloaded **`.exe
    - **Start Wind Tunnel**.
 
 **If something fails:** use **“Why isn’t it working?”** or **Help** in the menu.
+
+### If the MSI says an administrator blocked installation
+
+That dialog (e.g. Danish: *Systemadministratoren har angivet systemregler, der forhindrer denne installation*) means **Windows policy** on a **managed** PC — often **Group Policy**, **Software Restriction Policies**, or **AppLocker**. The **`HWTW.msi`** from GitHub is **not** signed with a commercial **Authenticode** certificate, which many organizations require for MSI installs. This is **not** a bug in the installer that we can fix from the repo alone.
+
+**What you can try:**
+
+- Prefer the **portable [`HWTW.exe`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW.exe)** — it does **not** use Windows Installer. Put it in a folder you control (e.g. **Desktop** or **Documents**) and run it from there. Some workplaces still block unknown **`.exe`** files; then you need a **personal** machine or an **IT exception**.
+- On a PC you fully control, install while signed in as a user with **local administrator** rights and without those restrictions.
+- Ask **IT** to allowlist the MSI or install HWTW for you.
+
+**SmartScreen** (“Windows protected your PC”) is separate from policy: use **More info → Run anyway** only if you trust the file from **[official Releases](https://github.com/ta10101/HWTW/releases/latest)**.
 
 ### Quick checklist (Windows)
 
