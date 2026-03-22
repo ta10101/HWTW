@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-03-23
+
+### Fixed
+
+- **Windows MSI (WiX 3):** Declare **`<Directory Id="CommonDesktopFolder" />`** under **`TARGETDIR`** so **`DirectoryRef`** for the desktop shortcut resolves — fixes **LGHT0094** (*unresolved symbol ‘Directory:CommonDesktopFolder’*).
+
 ## [1.3.0] - 2026-03-23
 
 ### Added

@@ -55,6 +55,8 @@
       <Directory Id="CommonProgramsFolder">
         <Directory Id="ApplicationProgramsFolder" Name="HWTW" />
       </Directory>
+      <!-- Must appear under TARGETDIR; DirectoryRef alone does not define the row → LGHT0094. -->
+      <Directory Id="CommonDesktopFolder" />
     </Directory>
   </Fragment>
 
@@ -99,7 +101,6 @@
   </Fragment>
 
   <Fragment>
-    <!-- WiX 3: use CommonDesktopFolder (all-users desktop). PublicDesktopFolder is not a standard symbol → LGHT0094. -->
     <DirectoryRef Id="CommonDesktopFolder">
       <Component Id="cmpDesktopShortcut" Guid="*">
         <Shortcut
