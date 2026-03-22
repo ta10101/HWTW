@@ -9,6 +9,7 @@ import importlib
 import json
 import os
 import shlex
+from collections import deque
 import subprocess
 import sys
 import threading
@@ -18,7 +19,7 @@ from tkinter import filedialog, messagebox, scrolledtext, ttk
 
 psutil = None  # set in bootstrap_requirements()
 
-__version__ = "1.0.2"
+__version__ = "1.1.1"
 APP_SHORT = "HWTW"
 
 IMAGE = "ghcr.io/holochain/wind-tunnel-runner:latest"
@@ -35,8 +36,12 @@ MIN_DISK_FREE_BYTES = 10 * 1024**3
 DEFAULT_LOG_TAIL = 200
 
 
+def is_frozen() -> bool:
+    return bool(getattr(sys, "frozen", False))
+
+
 def app_dir() -> str:
-    if getattr(sys, "frozen", False):
+    if is_frozen():
         return os.path.dirname(os.path.abspath(sys.executable))
     return os.path.dirname(os.path.abspath(__file__))
 
@@ -142,6 +147,17 @@ def bootstrap_requirements(parent: tk.Misc | None, *, force_install: bool = Fals
             return True
         except ImportError:
             pass
+
+    if is_frozen():
+        _load_psutil()
+        if psutil is None:
+            messagebox.showerror(
+                "Missing built-in libraries",
+                "This build should include psutil but it failed to load.\n"
+                "Re-download HWTW.exe from the project releases page.",
+                parent=parent,
+            )
+        return psutil is not None
 
     req = requirements_path()
     if not os.path.isfile(req):
@@ -273,6 +289,74 @@ def wsl2_environment_ready() -> bool:
         if toks and toks[-1] == "2":
             return True
     return False
+
+
+def wind_tunnel_runner_running() -> bool:
+    code, out, _ = run_cmd(
+        ["docker", "ps", "-q", "--filter", f"ancestor={IMAGE}", "--filter", "status=running"],
+        timeout=20,
+    )
+    return code == 0 and bool((out or "").strip())
+
+
+def build_diagnosis_text() -> str:
+    blocks: list[str] = []
+    if not docker_cli_ok():
+        blocks.append(
+            "DOCKER IS NOT READY\n"
+            "— Open “Docker Desktop” from the Start menu and wait until it says Docker is running "
+            "(whale icon in the taskbar).\n"
+            "— If Docker is not installed: use the “Install Docker Desktop” button in this app, "
+            "or install from docker.com and restart the PC if asked.\n"
+            "— On Windows, Docker needs WSL 2 with a Linux distro (e.g. Ubuntu). "
+            "If installs fail, search “WSL install” on learn.microsoft.com."
+        )
+    elif sys.platform == "win32" and not wsl2_environment_ready():
+        blocks.append(
+            "WSL 2 IS NOT READY (Windows)\n"
+            "Docker Desktop’s Linux engine needs WSL 2 and a Linux distribution.\n"
+            "— In an Administrator PowerShell run: wsl --install\n"
+            "— Restart if Windows asks, finish Ubuntu setup, then start Docker again."
+        )
+    if psutil is not None:
+        try:
+            vm = psutil.virtual_memory()
+            if vm.total < MIN_RAM_BYTES:
+                blocks.append(
+                    f"LOW RAM FOR GUIDE MINIMUM\n"
+                    f"— Holo’s guide asks for about 8 GiB RAM; this PC reports about {vm.total // (1024**3)} GiB total.\n"
+                    f"— The app may still run, but performance could be poor."
+                )
+            du = None
+            for p in ("C:\\", "/"):
+                try:
+                    du = psutil.disk_usage(p)
+                    break
+                except OSError:
+                    continue
+            if du and du.free < MIN_DISK_FREE_BYTES:
+                blocks.append(
+                    f"LOW FREE DISK SPACE\n"
+                    f"— Guide asks for about 10 GiB free; this drive has about {du.free // (1024**3)} GiB free.\n"
+                    f"— Free space before pulling the Wind Tunnel image."
+                )
+        except OSError:
+            pass
+
+    if docker_cli_ok() and not wind_tunnel_runner_running():
+        blocks.append(
+            "WIND TUNNEL CONTAINER IS NOT RUNNING\n"
+            "— Set your node name (e.g. nomad-client-yourname-01), then use “Download Wind Tunnel image” "
+            "and “Start Wind Tunnel”.\n"
+            "— If start fails, open the “Expert tools & logs” tab and read the red error text."
+        )
+
+    if not blocks:
+        return (
+            "No obvious problems detected.\n\n"
+            "If something still fails, use the Expert tab → command log, or ask in Holo / Wind Tunnel community channels."
+        )
+    return "\n\n— — —\n\n".join(blocks)
 
 
 def _docker_info_text() -> str:
@@ -450,9 +534,20 @@ def run_first_run_setup() -> None:
     root.withdraw()
     try:
         first = not os.path.isfile(setup_marker_path())
-        bootstrap_requirements(root, force_install=first)
-        if first:
+        bootstrap_requirements(root, force_install=first and not is_frozen())
+        if first and not is_frozen():
             offer_docker_on_first_launch(root)
+        elif first and is_frozen():
+            if not docker_cli_ok():
+                messagebox.showinfo(
+                    "One-time setup: Docker",
+                    "HWTW controls the Wind Tunnel using Docker.\n\n"
+                    "1) Install Docker Desktop for Windows (if you have not already).\n"
+                    "2) Start Docker Desktop and wait until it is fully running.\n"
+                    "3) Come back to this app — green status means you are ready.\n\n"
+                    "Use Help → “Why isn’t it working?” anytime.",
+                    parent=root,
+                )
         try:
             with open(setup_marker_path(), "w", encoding="utf-8") as f:
                 f.write("ok\n")
@@ -493,16 +588,82 @@ def _import_sv_ttk():
         return None
 
 
+class ToolTip:
+    """Small hover hint (delay before show)."""
+
+    def __init__(self, widget: tk.Widget, text: str, delay_ms: int = 450) -> None:
+        self.widget = widget
+        self.text = text
+        self.delay_ms = delay_ms
+        self._tip: tk.Toplevel | None = None
+        self._after_id: str | None = None
+        widget.bind("<Enter>", self._schedule, add=True)
+        widget.bind("<Leave>", self._hide, add=True)
+        widget.bind("<ButtonPress>", self._hide, add=True)
+
+    def _schedule(self, _event: object | None = None) -> None:
+        self._hide()
+        self._after_id = self.widget.after(self.delay_ms, self._show)
+
+    def _show(self) -> None:
+        self._after_id = None
+        if self._tip is not None:
+            return
+        try:
+            x = self.widget.winfo_rootx() + 12
+            y = self.widget.winfo_rooty() + self.widget.winfo_height() + 6
+        except tk.TclError:
+            return
+        self._tip = tw = tk.Toplevel(self.widget)
+        tw.wm_overrideredirect(True)
+        try:
+            tw.wm_attributes("-topmost", True)
+        except tk.TclError:
+            pass
+        lb = tk.Label(
+            tw,
+            text=self.text,
+            justify=tk.LEFT,
+            background="#fffde7",
+            relief=tk.SOLID,
+            borderwidth=1,
+            font=("Segoe UI", 9),
+            wraplength=340,
+            padx=8,
+            pady=6,
+        )
+        lb.pack()
+        tw.update_idletasks()
+        tw.geometry(f"+{x}+{y}")
+
+    def _hide(self, _event: object | None = None) -> None:
+        if self._after_id:
+            try:
+                self.widget.after_cancel(self._after_id)
+            except tk.TclError:
+                pass
+            self._after_id = None
+        if self._tip:
+            try:
+                self._tip.destroy()
+            except tk.TclError:
+                pass
+            self._tip = None
+
+
 class WindTunnelApp(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
         self.title(f"{APP_SHORT} v{__version__} — Holo Wind Tunnel Runner")
         self.minsize(760, 640)
-        self.geometry("920x720")
+        self.geometry("980x780")
 
         self._docker_busy = threading.Lock()
         self._poll_after_id: str | None = None
         self._preflight_after_id: str | None = None
+        self._easy_dash_after_id: str | None = None
+        self._cpu_history: deque[float] = deque(maxlen=90)
+        self._welcome_win: tk.Toplevel | None = None
 
         cfg = load_config()
         self._sv_ttk = _import_sv_ttk()
@@ -521,6 +682,9 @@ class WindTunnelApp(tk.Tk):
         self._start_docker_status_poll()
         self._start_preflight_poll()
 
+        if not cfg.get("hide_welcome_easy"):
+            self.after(900, lambda: self._show_welcome_easy_dialog(force=False))
+
     def _build_menubar(self) -> None:
         menubar = tk.Menu(self)
         view = tk.Menu(menubar, tearoff=0)
@@ -533,6 +697,12 @@ class WindTunnelApp(tk.Tk):
         else:
             view.add_command(label="Dark theme (install sv-ttk)", state=tk.DISABLED)
         menubar.add_cascade(label="View", menu=view)
+        help_m = tk.Menu(menubar, tearoff=0)
+        help_m.add_command(label="Welcome tips…", command=lambda: self._show_welcome_easy_dialog(force=True))
+        help_m.add_command(label="Why isn’t it working? …", command=self.show_diagnosis_window)
+        help_m.add_command(label="Open Wind Tunnel guide (web)", command=self.open_guide_web)
+        help_m.add_command(label="Open official PDF", command=self.open_guide_pdf)
+        menubar.add_cascade(label="Help", menu=help_m)
         self.config(menu=menubar)
 
     def _toggle_dark_theme(self) -> None:
@@ -552,7 +722,156 @@ class WindTunnelApp(tk.Tk):
         self.lbl_docker.pack(side=tk.LEFT)
         ttk.Button(top_bar, text="Install / fix Docker", command=self.on_install_docker).pack(side=tk.RIGHT)
 
-        pf = ttk.LabelFrame(main, text="Preflight (Holo guide: ≥8 GiB RAM, ≥10 GiB free disk)", padding=8)
+        nb = ttk.Notebook(main)
+        nb.pack(fill=tk.BOTH, expand=True, pady=(0, 8))
+        tab_easy = ttk.Frame(nb, padding=8)
+        nb.add(tab_easy, text="Easy start (recommended)")
+        self._build_easy_tab(tab_easy)
+        tab_expert = ttk.Frame(nb, padding=4)
+        nb.add(tab_expert, text="Expert tools & logs")
+        self._build_expert_tab(tab_expert)
+
+        foot = ttk.Frame(main)
+        foot.pack(fill=tk.X)
+        ttk.Label(
+            foot,
+            text="Wind Tunnel needs Docker (separate install on Windows: Docker Desktop + WSL 2). "
+            "The .exe bundles this app only — not Docker. "
+            "Flags --privileged / --net=host apply inside Docker’s Linux engine.",
+            font=("Segoe UI", 8),
+            foreground="#555",
+            wraplength=880,
+        ).pack(anchor=tk.W)
+
+        self._update_hostname_label()
+        self.after(500, self._update_hostname_label_loop)
+        self.on_refresh_ps()
+        self._refresh_docker_status()
+        self.after(400, self._update_easy_dashboard)
+
+    def _build_easy_tab(self, tab: ttk.Frame) -> None:
+        intro = ttk.Label(
+            tab,
+            text=(
+                "Follow the colored boxes below. Green = good. When Docker and (on Windows) WSL are green, "
+                "enter your node name, download the image once, then press Start. "
+                "Use Help → “Why isn’t it working?” for plain-language fixes."
+            ),
+            wraplength=860,
+            font=("Segoe UI", 10),
+        )
+        intro.pack(anchor=tk.W, pady=(0, 12))
+
+        pills = ttk.Frame(tab)
+        pills.pack(fill=tk.X, pady=(0, 12))
+        for c in range(4):
+            pills.columnconfigure(c, weight=1)
+
+        def make_pill(col: int) -> tuple[tk.Frame, tk.Label]:
+            fr = tk.Frame(pills, bd=2, relief=tk.GROOVE, padx=8, pady=8)
+            fr.grid(row=0, column=col, padx=4, sticky=tk.NSEW)
+            lb = tk.Label(fr, text="…", font=("Segoe UI", 10, "bold"), justify=tk.CENTER, wraplength=180)
+            lb.pack(fill=tk.BOTH, expand=True)
+            return fr, lb
+
+        self._easy_fr_docker, self._easy_pill_docker = make_pill(0)
+        self._easy_fr_wsl, self._easy_pill_wsl = make_pill(1)
+        self._easy_fr_runner, self._easy_pill_runner = make_pill(2)
+        self._easy_fr_pc, self._easy_pill_pc = make_pill(3)
+        self._easy_pill_frames = [
+            self._easy_fr_docker,
+            self._easy_fr_wsl,
+            self._easy_fr_runner,
+            self._easy_fr_pc,
+        ]
+
+        _tip_docker = (
+            "Docker Desktop (or another Docker engine) must be installed and running. "
+            "The whale icon in the taskbar should be steady — open Docker and wait if it says Starting."
+        )
+        ToolTip(self._easy_fr_docker, _tip_docker)
+        ToolTip(self._easy_pill_docker, _tip_docker)
+        _tip_wsl = (
+            "On Windows, Docker’s Linux engine needs WSL 2 and a Linux distro (e.g. Ubuntu). "
+            "If this stays red, install WSL from an Administrator PowerShell: wsl --install"
+        )
+        ToolTip(self._easy_fr_wsl, _tip_wsl)
+        ToolTip(self._easy_pill_wsl, _tip_wsl)
+        _tip_runner = (
+            "Shows whether the official wind-tunnel-runner container is running on this PC. "
+            "Use Download image, then Start Wind Tunnel below."
+        )
+        ToolTip(self._easy_fr_runner, _tip_runner)
+        ToolTip(self._easy_pill_runner, _tip_runner)
+        _tip_pc = (
+            "Holo’s guide suggests at least 8 GiB RAM and 10 GiB free disk. "
+            "Orange/red here means your PC may be below that — it can still work but may be tight."
+        )
+        ToolTip(self._easy_fr_pc, _tip_pc)
+        ToolTip(self._easy_pill_pc, _tip_pc)
+        self._easy_canvas = tk.Canvas(
+            tab, height=72, background="#f5f5f5", highlightthickness=1, highlightbackground="#ccc"
+        )
+        self._easy_canvas.pack(fill=tk.X, pady=(4, 8))
+        self._easy_canvas.bind("<Configure>", lambda _e: self._draw_cpu_sparkline())
+        ToolTip(
+            self._easy_canvas,
+            "Rough trend of overall CPU use on this PC (not only Wind Tunnel). Updates every couple of seconds.",
+        )
+
+        self._var_prog_cpu = tk.DoubleVar(value=0.0)
+        self._var_prog_ram = tk.DoubleVar(value=0.0)
+        self._var_prog_disk = tk.DoubleVar(value=0.0)
+        gf = ttk.Frame(tab)
+        gf.pack(fill=tk.X, pady=4)
+        ttk.Label(gf, text="CPU", width=10).grid(row=0, column=0, sticky=tk.W)
+        ttk.Progressbar(gf, variable=self._var_prog_cpu, maximum=100, length=400).grid(
+            row=0, column=1, sticky=tk.EW, padx=4
+        )
+        self._lbl_easy_cpu = ttk.Label(gf, text="0%", width=8)
+        self._lbl_easy_cpu.grid(row=0, column=2)
+        ttk.Label(gf, text="RAM used", width=10).grid(row=1, column=0, sticky=tk.W, pady=4)
+        ttk.Progressbar(gf, variable=self._var_prog_ram, maximum=100, length=400).grid(
+            row=1, column=1, sticky=tk.EW, padx=4, pady=4
+        )
+        self._lbl_easy_ram = ttk.Label(gf, text="0%", width=8)
+        self._lbl_easy_ram.grid(row=1, column=2, pady=4)
+        ttk.Label(gf, text="Disk used", width=10).grid(row=2, column=0, sticky=tk.W)
+        ttk.Progressbar(gf, variable=self._var_prog_disk, maximum=100, length=400).grid(
+            row=2, column=1, sticky=tk.EW, padx=4
+        )
+        self._lbl_easy_disk = ttk.Label(gf, text="0%", width=8)
+        self._lbl_easy_disk.grid(row=2, column=2)
+        gf.columnconfigure(1, weight=1)
+
+        hn_easy = ttk.LabelFrame(tab, text="Your node name (must be unique — see Holo guide)", padding=8)
+        hn_easy.pack(fill=tk.X, pady=(12, 8))
+        ttk.Label(
+            hn_easy,
+            text="Example: nomad-client-jane-01   (change “jane” and “01” to match you)",
+        ).pack(anchor=tk.W)
+        erow = ttk.Frame(hn_easy)
+        erow.pack(fill=tk.X, pady=(6, 0))
+        ttk.Entry(erow, textvariable=self.var_hostname, width=55).pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+        big = ttk.Frame(tab)
+        big.pack(fill=tk.X, pady=16)
+        ttk.Button(big, text="Install / fix Docker (Windows helper)", command=self.on_install_docker).pack(
+            fill=tk.X, pady=3, ipady=6
+        )
+        ttk.Button(big, text="1 — Download Wind Tunnel image (first time, may take a while)", command=self.on_pull).pack(
+            fill=tk.X, pady=3, ipady=8
+        )
+        ttk.Button(big, text="2 — Start Wind Tunnel on this PC", command=self.on_start_runner).pack(
+            fill=tk.X, pady=3, ipady=8
+        )
+        ttk.Button(big, text="Stop Wind Tunnel", command=self.on_stop_runner).pack(fill=tk.X, pady=3, ipady=6)
+        ttk.Button(big, text="Why isn’t it working? …", command=self.show_diagnosis_window).pack(
+            fill=tk.X, pady=8, ipady=6
+        )
+
+    def _build_expert_tab(self, tab: ttk.Frame) -> None:
+        pf = ttk.LabelFrame(tab, text="Preflight (Holo guide: ≥8 GiB RAM, ≥10 GiB free disk)", padding=8)
         pf.pack(fill=tk.X, pady=(0, 8))
         pgrid = ttk.Frame(pf)
         pgrid.pack(fill=tk.X)
@@ -565,11 +884,11 @@ class WindTunnelApp(tk.Tk):
         self.lbl_pf_disk = ttk.Label(pgrid, text="Disk free: …")
         self.lbl_pf_disk.grid(row=1, column=1, sticky=tk.W, padx=(0, 16), pady=(4, 0))
 
-        hn_frame = ttk.LabelFrame(main, text="Wind Tunnel hostname (guide: nomad-client-<you>-<nn>)", padding=8)
+        hn_frame = ttk.LabelFrame(tab, text="Wind Tunnel hostname (guide: nomad-client-<you>-<nn>)", padding=8)
         hn_frame.pack(fill=tk.X, pady=(0, 8))
         ttk.Label(
             hn_frame,
-            text="Example: nomad-client-rob-01 — must be unique in the cluster. Saved automatically when you close the app.",
+            text="Example: nomad-client-rob-01 — saved when you close the app.",
         ).pack(anchor=tk.W)
         row = ttk.Frame(hn_frame)
         row.pack(fill=tk.X, pady=(6, 0))
@@ -577,7 +896,7 @@ class WindTunnelApp(tk.Tk):
         self.entry_hostname.pack(side=tk.LEFT, fill=tk.X, expand=True)
         ttk.Button(row, text="Copy docker run …", command=self.on_copy_run_command).pack(side=tk.LEFT, padx=(8, 0))
 
-        act = ttk.LabelFrame(main, text="Docker actions (official guide steps)", padding=8)
+        act = ttk.LabelFrame(tab, text="Docker actions (official guide steps)", padding=8)
         act.pack(fill=tk.X, pady=(0, 8))
         btn_row1 = ttk.Frame(act)
         btn_row1.pack(fill=tk.X)
@@ -604,7 +923,7 @@ class WindTunnelApp(tk.Tk):
         ttk.Spinbox(log_row, from_=50, to=2000, width=6, textvariable=self.var_log_tail).pack(side=tk.LEFT, padx=(4, 12))
         ttk.Button(log_row, text="Fetch runner container logs", command=self.on_fetch_runner_logs).pack(side=tk.LEFT)
 
-        status = ttk.LabelFrame(main, text="Behind the scenes", padding=8)
+        status = ttk.LabelFrame(tab, text="Behind the scenes", padding=8)
         status.pack(fill=tk.BOTH, expand=True, pady=(0, 8))
 
         res_row = ttk.Frame(status)
@@ -616,7 +935,7 @@ class WindTunnelApp(tk.Tk):
         if psutil is None:
             ttk.Label(
                 res_row,
-                text="Resources need psutil — restart the app after first-run setup, or run pip install -r requirements.txt",
+                text="Resources need psutil — use source install or a full release build.",
                 foreground="#a60",
             ).pack(anchor=tk.W)
 
@@ -639,20 +958,167 @@ class WindTunnelApp(tk.Tk):
         self.log = scrolledtext.ScrolledText(status, height=10, wrap=tk.WORD, font=("Consolas", 9))
         self.log.pack(fill=tk.BOTH, expand=True)
 
-        foot = ttk.Frame(main)
-        foot.pack(fill=tk.X)
-        ttk.Label(
-            foot,
-            text="Guide expects HolOS/Linux with Docker. On Windows use Docker Desktop + WSL2 backend; "
-            "some flags (--privileged, --net=host) apply inside Docker’s Linux engine.",
-            font=("Segoe UI", 8),
-            foreground="#555",
-        ).pack(anchor=tk.W)
+    def show_diagnosis_window(self) -> None:
+        win = tk.Toplevel(self)
+        win.title("HWTW — What might be wrong?")
+        win.minsize(520, 360)
+        win.geometry("680x420")
+        body = scrolledtext.ScrolledText(win, wrap=tk.WORD, font=("Segoe UI", 10), padx=8, pady=8)
+        body.pack(fill=tk.BOTH, expand=True, padx=8, pady=8)
+        body.insert("1.0", build_diagnosis_text())
+        body.configure(state=tk.DISABLED)
+        ttk.Button(win, text="Close", command=win.destroy).pack(pady=6)
 
-        self._update_hostname_label()
-        self.after(500, self._update_hostname_label_loop)
-        self.on_refresh_ps()
-        self._refresh_docker_status()
+    def _show_welcome_easy_dialog(self, *, force: bool) -> None:
+        if not force and load_config().get("hide_welcome_easy"):
+            return
+        if self._welcome_win is not None:
+            try:
+                if self._welcome_win.winfo_exists():
+                    self._welcome_win.lift()
+                    self._welcome_win.focus_force()
+                    return
+            except tk.TclError:
+                pass
+            self._welcome_win = None
+
+        win = tk.Toplevel(self)
+        self._welcome_win = win
+        win.title("Welcome — HWTW")
+        win.minsize(440, 380)
+        win.geometry("520x420")
+        win.transient(self)
+        frm = ttk.Frame(win, padding=16)
+        frm.pack(fill=tk.BOTH, expand=True)
+        ttk.Label(frm, text="Holo Wind Tunnel helper (HWTW)", font=("Segoe UI", 12, "bold")).pack(anchor=tk.W)
+        msg = (
+            "You are on the Easy start tab — best for most people.\n\n"
+            "1) One-time: install Docker Desktop for Windows and start it (this app cannot bundle Docker).\n"
+            "2) Wait until the Docker and WSL tiles turn green.\n"
+            "3) Type a node name like nomad-client-yourname-01.\n"
+            "4) Tap “Download Wind Tunnel image”, then “Start Wind Tunnel”.\n\n"
+            "Hover the colored tiles for hints. Use Help → “Why isn’t it working?” if anything is red.\n\n"
+            "Advanced users: switch to “Expert tools & logs” for full Docker output."
+        )
+        ttk.Label(frm, text=msg, wraplength=460, font=("Segoe UI", 10)).pack(anchor=tk.W, pady=(12, 8))
+
+        var_hide = tk.BooleanVar(value=False)
+        ttk.Checkbutton(
+            frm,
+            text="Don’t show this welcome window again",
+            variable=var_hide,
+        ).pack(anchor=tk.W, pady=(8, 12))
+
+        def _close() -> None:
+            if var_hide.get():
+                save_config(hide_welcome_easy=True)
+            try:
+                win.destroy()
+            except tk.TclError:
+                pass
+            self._welcome_win = None
+
+        win.protocol("WM_DELETE_WINDOW", _close)
+        ttk.Button(frm, text="Got it — let’s go", command=_close).pack(anchor=tk.E, pady=4)
+
+    def _easy_set_pill(self, index: int, line1: str, line2: str, ok: bool | None) -> None:
+        lbl = (self._easy_pill_docker, self._easy_pill_wsl, self._easy_pill_runner, self._easy_pill_pc)[index]
+        fr = self._easy_pill_frames[index]
+        if ok is True:
+            bg = "#c8e6c9"
+        elif ok is False:
+            bg = "#ffcdd2"
+        else:
+            bg = "#eceff1"
+        fr.configure(bg=bg)
+        lbl.configure(bg=bg, text=f"{line1}\n{line2}")
+
+    def _draw_cpu_sparkline(self) -> None:
+        cv = self._easy_canvas
+        cv.delete("all")
+        pts = list(self._cpu_history)
+        if len(pts) < 2:
+            return
+        w = max(cv.winfo_width(), 200)
+        h = max(cv.winfo_height(), 60)
+        n = len(pts)
+        coords: list[float] = []
+        for i, p in enumerate(pts):
+            x = 4 + (w - 8) * i / max(n - 1, 1)
+            y = h - 4 - (h - 8) * min(100.0, max(0.0, p)) / 100.0
+            coords.extend([x, y])
+        if len(coords) >= 4:
+            cv.create_line(*coords, fill="#1565c0", width=2, smooth=True)
+
+    def _update_easy_dashboard(self) -> None:
+        if self._easy_dash_after_id:
+            try:
+                self.after_cancel(self._easy_dash_after_id)
+            except tk.TclError:
+                pass
+            self._easy_dash_after_id = None
+        try:
+            d_ok = docker_cli_ok()
+            self._easy_set_pill(0, "Docker engine", "Running ✓" if d_ok else "Not ready ✗", d_ok)
+
+            if sys.platform == "win32":
+                w_ok = wsl2_environment_ready()
+                self._easy_set_pill(1, "WSL 2 (Windows)", "Ready ✓" if w_ok else "Set up WSL ✗", w_ok)
+            else:
+                self._easy_set_pill(1, "WSL 2", "Not needed", None)
+
+            if d_ok:
+                r_ok = wind_tunnel_runner_running()
+                self._easy_set_pill(2, "Wind Tunnel", "Container up ✓" if r_ok else "Not running", r_ok)
+            else:
+                self._easy_set_pill(2, "Wind Tunnel", "Need Docker first", False)
+
+            pc_ok = None
+            pc_sub = "—"
+            if psutil is not None:
+                try:
+                    vm = psutil.virtual_memory()
+                    du = None
+                    for p in ("C:\\", "/"):
+                        try:
+                            du = psutil.disk_usage(p)
+                            break
+                        except OSError:
+                            continue
+                    ram_b = vm.total >= MIN_RAM_BYTES
+                    disk_b = du is None or du.free >= MIN_DISK_FREE_BYTES
+                    pc_ok = ram_b and disk_b
+                    pc_sub = f"{vm.total // (1024**3)} GiB RAM"
+                    if du:
+                        pc_sub += f", {du.free // (1024**3)} GiB free"
+                except OSError:
+                    pc_ok = None
+                    pc_sub = "unknown"
+            self._easy_set_pill(3, "This PC", pc_sub, pc_ok)
+
+            if psutil is not None:
+                cpu = float(psutil.cpu_percent(interval=None))
+                self._cpu_history.append(cpu)
+                vm = psutil.virtual_memory()
+                self._var_prog_cpu.set(cpu)
+                self._var_prog_ram.set(float(vm.percent))
+                self._lbl_easy_cpu.configure(text=f"{cpu:.0f}%")
+                self._lbl_easy_ram.configure(text=f"{vm.percent:.0f}%")
+                du = None
+                for p in ("C:\\", "/"):
+                    try:
+                        du = psutil.disk_usage(p)
+                        break
+                    except OSError:
+                        continue
+                if du:
+                    pct = 100.0 * (du.used / du.total) if du.total else 0.0
+                    self._var_prog_disk.set(pct)
+                    self._lbl_easy_disk.configure(text=f"{pct:.0f}%")
+            self._draw_cpu_sparkline()
+        except tk.TclError:
+            return
+        self._easy_dash_after_id = self.after(1500, self._update_easy_dashboard)
 
     def _preflight_ok_color(self, ok: bool | None) -> str:
         if ok is None:
@@ -790,6 +1256,12 @@ class WindTunnelApp(tk.Tk):
         if self._preflight_after_id:
             self.after_cancel(self._preflight_after_id)
             self._preflight_after_id = None
+        if self._easy_dash_after_id:
+            try:
+                self.after_cancel(self._easy_dash_after_id)
+            except tk.TclError:
+                pass
+            self._easy_dash_after_id = None
         super().destroy()
 
     def log_line(self, msg: str) -> None:
