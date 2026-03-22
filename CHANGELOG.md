@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **README:** Windows MSI bullet aligned with **INSTALL.md** (icon **v1.2.13+**, uninstall shortcut **v1.2.14+**).
 
+## [1.2.19] - 2026-03-22
+
+### Fixed
+
+- **Windows MSI (WiX 3):** **`DirectoryRef Id="PublicDesktopFolder"`** caused **LGHT0094** (unresolved symbol). Replaced with **`CommonDesktopFolder`**, the standard **all-users desktop** directory (same intent as “public” desktop shortcut).
+
 ## [1.2.18] - 2026-03-22
 
 ### Fixed

@@ -96,7 +96,8 @@
   </Fragment>
 
   <Fragment>
-    <DirectoryRef Id="PublicDesktopFolder">
+    <!-- WiX 3: use CommonDesktopFolder (all-users desktop). PublicDesktopFolder is not a standard symbol → LGHT0094. -->
+    <DirectoryRef Id="CommonDesktopFolder">
       <Component Id="cmpDesktopShortcut" Guid="*">
         <Shortcut
             Id="scHWTWDesktop"
