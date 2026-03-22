@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.3] - 2026-03-22
+
+### Fixed
+
+- **Linux / Chromebook:** always bootstrap via **`.venv`** when running from source (not only when `EXTERNALLY-MANAGED` is detected), so Crostini and similar setups never hit system **`pip`**. If system **`pip` still fails** with PEP 668, **retry** via `.venv`. Clearer **psutil** / **`cd`** hints.
+
+### Changed
+
+- README: Chromebook **`python3-full`**, and **run `main.py` from the project folder** (not `~`).
+
 ## [1.1.2] - 2026-03-22
 
 ### Added
