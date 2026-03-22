@@ -24,11 +24,15 @@ from tkinter import filedialog, messagebox, scrolledtext, ttk
 
 psutil = None  # set in bootstrap_requirements()
 
-__version__ = "1.2.8"
+__version__ = "1.2.9"
 APP_SHORT = "HWTW"
 
 # Shown once per version after upgrade (see _show_version_news_if_needed).
 WHATS_NEW_BY_VERSION: dict[str, str] = {
+    "1.2.9": (
+        "• **GitHub Releases:** CI now supports repos with **immutable releases** (draft → macOS assets → publish) and **`workflow_dispatch`** to rebuild a tag.\n"
+        "• **Downloads:** Same app as **1.2.8**; this release republishes assets with the fixed pipeline."
+    ),
     "1.2.8": (
         "• **macOS Releases:** **`HWTW-macOS.app.zip`** (zipped **`.app`**) and **`HWTW-macOS.pkg`** (installs into **/Applications**), alongside the **`.dmg`**.\n"
         "• **`SHA256SUMS-macos.txt`** now covers **DMG + zip + pkg** (replaces the old DMG-only checksum file)."

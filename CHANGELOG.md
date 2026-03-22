@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.9] - 2026-03-22
+
 ### Fixed
 
 - **Release CI:** GitHub’s workflow parser rejects **`secrets` in `if:`** and in **`${{ }}` inside `run:`** (only direct **`env:` / `with:`** assignments like **`${{ secrets.NAME }}`** are valid). Earlier we also hit **`secrets` inside `env:` for a boolean**. macOS signing steps now branch in the shell on **`[ -n "$P12_BASE64" ]`** with **`P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12 }}`** on the step. **`workflow_dispatch`** can rebuild an existing tag after pushing this fix.
@@ -14,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Releases:** Windows publish step sets **`make_latest: true`** and prepends a **download table** to release notes; README / INSTALL document **`/releases/latest/download/...`** links for **`HWTW.exe`**, **`HWTW.msi`**, **`SHA256SUMS.txt`**, and **`requirements.txt`**.
+- **Releases:** Windows draft step prepends a **download table** to release notes; README / INSTALL document **`/releases/latest/download/...`** links for **`HWTW.exe`**, **`HWTW.msi`**, **`SHA256SUMS.txt`**, and **`requirements.txt`**.
 
 ## [1.2.8] - 2026-03-22
 
