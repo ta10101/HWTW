@@ -147,6 +147,27 @@ jobs:
         run: |
           python -c "import hashlib, pathlib; d=pathlib.Path('dist'); g=lambda n: hashlib.sha256(d.joinpath(n).read_bytes()).hexdigest(); names=['HWTW.exe','requirements.txt','HWTW.msi']; t='\n'.join([g(n)+'  '+n for n in names])+'\n'; d.joinpath('SHA256SUMS.txt').write_text(t, encoding='utf-8'); print(t)"
 
+      # Immutable / re-runs: action-gh-release defaults to overwrite_files=true, which DELETEs assets first →
+      # "Cannot delete asset from an immutable release". Drop draft and recreate; never delete published releases.
+      - name: Prune draft release for tag (re-runs)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -eux
+          TAG="${{ steps.meta.outputs.tag }}"
+          if ! gh release view "$TAG" --repo "${{ github.repository }}" &>/dev/null; then
+            echo "No existing GitHub release for $TAG."
+            exit 0
+          fi
+          DRAFT=$(gh release view "$TAG" --repo "${{ github.repository }}" --json isDraft -q '.isDraft')
+          if [[ "$DRAFT" != "true" ]]; then
+            echo "Release $TAG is published (not draft). Skipping delete — use a new tag or delete the release in the UI if you must replace assets."
+            exit 0
+          fi
+          echo "Removing draft release $TAG so assets can be uploaded fresh..."
+          gh release delete "$TAG" --repo "${{ github.repository }}" --yes
+
       - name: Create draft GitHub Release (Windows assets)
         uses: softprops/action-gh-release@v2
         with:
@@ -154,6 +175,7 @@ jobs:
           draft: true
           prerelease: false
           make_latest: false
+          overwrite_files: false
           generate_release_notes: true
           body: |
             ### Download latest (Windows — these links track **Latest** after this release is published)
@@ -298,6 +320,7 @@ jobs:
         with:
           tag_name: ${{ steps.meta.outputs.tag }}
           draft: true
+          overwrite_files: false
           generate_release_notes: false
           files: |
             dist/${{ steps.names.outputs.dmg }}
