@@ -1,5 +1,28 @@
 # HWTW — Holo Wind Tunnel runner (GUI)
 
+## Get the latest release
+
+**Start here:** use GitHub’s **[Latest](https://github.com/ta10101/HWTW/releases/latest)** release — that is always the **newest published** build (the green **Latest** badge). The table below uses **`/releases/latest/download/...`** so these URLs stay correct when you upgrade.
+
+**Browse history:** **[All releases](https://github.com/ta10101/HWTW/releases)** — GitHub shows **newest first** at the top of the list.
+
+| Asset | Direct download |
+| ----- | ---------------- |
+| **Windows portable** | [`HWTW.exe`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW.exe) |
+| **Windows installer (x64)** | [`HWTW.msi`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW.msi) |
+| **SHA-256 checksums (Windows assets)** | [`SHA256SUMS.txt`](https://github.com/ta10101/HWTW/releases/latest/download/SHA256SUMS.txt) |
+| **Bundled `requirements.txt`** | [`requirements.txt`](https://github.com/ta10101/HWTW/releases/latest/download/requirements.txt) |
+
+**macOS** — filenames vary (**`HWTW-macOS.dmg`** vs **`HWTW-macOS-unsigned.dmg`**, plus **`.app.zip`**, **`.pkg`**, **`SHA256SUMS-macos.txt`**). Open **[Latest → Assets](https://github.com/ta10101/HWTW/releases/latest)** on that release page.
+
+If **Latest** is wrong while newer **tags** exist, the **Release** workflow may have failed — check **[Actions → Release](https://github.com/ta10101/HWTW/actions/workflows/release.yml)**, then **Run workflow** with the tag to publish (e.g. **`v1.2.13`**) or push a new **`v*`** tag.
+
+**Official downloads:** **`ta10101/HWTW`** only. Verify Windows assets with **`SHA256SUMS.txt`** and macOS with **`SHA256SUMS-macos.txt`**.
+
+**Print / share:** one-page **[INSTALL.md](INSTALL.md)** (Windows, macOS, Linux).
+
+---
+
 Desktop app for setting up a **Holo Edge Node** as a [Holochain Wind Tunnel](https://holo.host/resources/edge-node-wind-tunnel-guide/) runner. It runs the same Docker steps as the official guide and shows host resources, hostname, and Docker output.
 
 **Official PDF:** [EdgeNodeWindTunnelGuide.pdf](https://holo.host/files/EdgeNodeWindTunnelGuide.pdf)
@@ -15,25 +38,6 @@ Desktop app for setting up a **Holo Edge Node** as a [Holochain Wind Tunnel](htt
 | **Linux** (Chromebook Linux, Ubuntu, Debian, …) | [Install guide — Linux](#install-guide--linux) |
 
 **Everyone:** Wind Tunnel needs **Docker** running. HWTW only drives Docker — it does not replace Docker.
-
-### Download latest (stable URLs)
-
-These links follow GitHub’s **Latest** release ([open release page](https://github.com/ta10101/HWTW/releases/latest)):
-
-| Asset | Direct download |
-| ----- | ---------------- |
-| **Windows portable** | [`HWTW.exe`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW.exe) |
-| **Windows installer (x64)** | [`HWTW.msi`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW.msi) |
-| **SHA-256 checksums (Windows assets)** | [`SHA256SUMS.txt`](https://github.com/ta10101/HWTW/releases/latest/download/SHA256SUMS.txt) |
-| **Bundled `requirements.txt`** | [`requirements.txt`](https://github.com/ta10101/HWTW/releases/latest/download/requirements.txt) |
-
-**macOS** filenames vary (**`HWTW-macOS.dmg`** vs **`HWTW-macOS-unsigned.dmg`**, plus **`.app.zip`**, **`.pkg`**, **`SHA256SUMS-macos.txt`**) — use **[Latest → Assets](https://github.com/ta10101/HWTW/releases/latest)** on the release page.
-
-If **Latest** still points at an old version while newer **tags** exist on the repo, the **Release** workflow likely failed — open **[Actions → Release](https://github.com/ta10101/HWTW/actions/workflows/release.yml)**; after fixing CI, use **Run workflow** (pick tag **e.g. `v1.2.8`**) or push a new **`v*`** tag.
-
-**Official downloads:** Use **`ta10101/HWTW`** only. Verify Windows files with **`SHA256SUMS.txt`** and macOS with **`SHA256SUMS-macos.txt`**.
-
-**One-page install only:** **[INSTALL.md](INSTALL.md)** (Windows, macOS, Linux — easy to print or share).
 
 ### What we do **not** cover
 
@@ -60,8 +64,8 @@ You use a normal **Windows PC** and want the simplest path: a downloaded **`.exe
 ### Steps (do in order)
 
 1. **Download `HWTW.exe` or `HWTW.msi`**  
-   Open **[Releases](https://github.com/ta10101/HWTW/releases)** → download **`HWTW.exe`** (portable) **or** **`HWTW.msi`** (64-bit installer: installs under **`C:\Program Files\HWTW\`**). You do **not** need Python on Windows for either build.  
-   **After the MSI finishes:** it does **not** auto-open the app. The wizard (**v1.2.12+**) includes a **license** and **Setup Type** — choose **Custom** if you want to turn **Desktop shortcut** off. Then start **HWTW** from the **Start** menu (**HWTW** folder), the **desktop** shortcut (if enabled), or **`C:\Program Files\HWTW\HWTW.exe`**.
+   Prefer **[Latest](https://github.com/ta10101/HWTW/releases/latest)** (see [Get the latest release](#get-the-latest-release)) — **`HWTW.exe`** (portable) or **`HWTW.msi`** (64-bit installer under **`C:\Program Files\HWTW\`**). You do **not** need Python on Windows for either build.  
+   **After the MSI finishes:** it does **not** auto-open the app. The wizard (**v1.2.12+**) includes a **license** and **Setup Type** — choose **Custom** if you want to turn **Desktop shortcut** off (**v1.2.13+** adds the app icon). Then start **HWTW** from the **Start** menu (**HWTW** folder), the **desktop** shortcut (if enabled), or **`C:\Program Files\HWTW\HWTW.exe`**.
 
 2. **Install Docker Desktop** (one time, separate from HWTW)  
    Install from Docker’s site: **[Windows install guide](https://docs.docker.com/desktop/setup/install/windows-install/)**.  
@@ -99,7 +103,7 @@ That dialog (e.g. Danish: *Systemadministratoren har angivet systemregler, der f
 
 ### Quick checklist (Windows)
 
-- [ ] `HWTW.exe` from **Releases**
+- [ ] **`HWTW.exe` / `.msi` from [Latest](https://github.com/ta10101/HWTW/releases/latest)**
 - [ ] **Docker Desktop** installed
 - [ ] **WSL 2** OK if Docker required it
 - [ ] Docker **running** before starting Wind Tunnel steps in HWTW
@@ -123,11 +127,11 @@ Use **Python 3.10+**. First run may install extra UI pieces (e.g. **sv-ttk**). T
 
 ### Who this is for
 
-**Mac** with **macOS** (Intel or Apple Silicon). Prefer a **`.dmg`** from **[Releases](https://github.com/ta10101/HWTW/releases)** if you do not want to install Python yourself; otherwise use the **install script** or **`python3 main.py`**.
+**Mac** with **macOS** (Intel or Apple Silicon). Prefer artifacts from **[Latest](https://github.com/ta10101/HWTW/releases/latest)** (**`.dmg`**, **`.app.zip`**, **`.pkg`**) if you do not want to install Python yourself; otherwise use the **install script** or **`python3 main.py`**.
 
 ### Steps (recommended — prebuilt app)
 
-1. Download from **[Releases](https://github.com/ta10101/HWTW/releases)** — **`HWTW-macOS*.dmg`** (open and drag **HWTW** to **Applications**), **`HWTW-macOS.app.zip`** (unzip, drag **HWTW.app** to **Applications**), or **`HWTW-macOS.pkg`** (double-click to install into **/Applications**).  
+1. Download from **[Latest → Assets](https://github.com/ta10101/HWTW/releases/latest)** — **`HWTW-macOS*.dmg`** (open and drag **HWTW** to **Applications**), **`HWTW-macOS.app.zip`** (unzip, drag **HWTW.app** to **Applications**), or **`HWTW-macOS.pkg`** (double-click to install into **/Applications**).  
 2. If Gatekeeper blocks an **unsigned** build: **Right-click → Open** on the app, or allow it under **System Settings → Privacy & Security**.  
 3. Install and **start Docker Desktop** for Wind Tunnel **containers**: **[Docker Mac install](https://docs.docker.com/desktop/setup/install/mac-install/)**. HWTW can run **`brew install --cask docker`** from **Install / fix Docker (Mac)** if [Homebrew](https://brew.sh) is installed.
 
@@ -277,7 +281,7 @@ If **`wget`** returns **404**, the repo is not public at that URL — see [Make 
 
 | | Windows | macOS | Linux (easy path) |
 | -- | -- | -- | -- |
-| **App** | **`HWTW.exe`** from Releases, or Python + deps | **`install-macos.sh`** + **`run-hwtw-macos.sh`**, or **`python3 main.py`** | **`run-hwtw-linux.sh`** (after **`install-linux.sh`**) |
+| **App** | **`HWTW.exe`** / **`.msi`** from **[Latest](https://github.com/ta10101/HWTW/releases/latest)**, or Python + deps | **`install-macos.sh`** + **`run-hwtw-macos.sh`**, or **`python3 main.py`** | **`run-hwtw-linux.sh`** (after **`install-linux.sh`**) |
 | **Python** | Only for source runs (3.10+) | **3.10+** with **Tk** (python.org or Homebrew) | Via **`install-linux.sh`** / `apt` |
 | **Docker** | Docker Desktop + WSL 2 (typical) | **Docker Desktop for Mac** | Distro Docker package / engine |
 | **RAM / disk** | Holo guide: **≥ 8 GiB RAM**, **≥ 10 GiB** free | Same | Same |
@@ -326,7 +330,7 @@ The links in this README use **`https://github.com/ta10101/HWTW`**. A **404** fr
 
 ## Release binaries (CI)
 
-Pushing a **version tag** `v*` builds **Windows** (**`HWTW.exe`**, **`HWTW.msi`**, **`requirements.txt`**, **`SHA256SUMS.txt`**) into a **GitHub Release** first, then **macOS** attaches **`.dmg`**, **`.app.zip`**, **`.pkg`**, and **`SHA256SUMS-macos.txt`** (see [MACOS_SIGNING.md](MACOS_SIGNING.md)). **Linux** still uses the install scripts or **`python3 main.py`** from this repo.
+Pushing a **version tag** `v*` builds **Windows** (**`HWTW.exe`**, **`HWTW.msi`**, **`requirements.txt`**, **`SHA256SUMS.txt`**) into a **GitHub Release** first, then **macOS** attaches **`.dmg`**, **`.app.zip`**, **`.pkg`**, and **`SHA256SUMS-macos.txt`** (see [MACOS_SIGNING.md](MACOS_SIGNING.md)). When published, that tag becomes **[Latest](https://github.com/ta10101/HWTW/releases/latest)** unless you ship a prerelease. **Linux** still uses the install scripts or **`python3 main.py`** from this repo.
 
 ## Publishing on GitHub
 
@@ -344,8 +348,8 @@ git push -u origin main
 ## Creating a release
 
 1. Bump **`__version__`** in `main.py` and **`CHANGELOG.md`**, commit and push.  
-2. `git tag -a v1.1.1 -m "Release v1.1.1"` && `git push origin v1.1.1`  
-3. Check **Releases** for **`HWTW.exe`**, **`HWTW.msi`**, **`requirements.txt`**, and macOS **`.dmg`** / **`.app.zip`** / **`.pkg`**.  
+2. `git tag -a v1.2.13 -m "Release v1.2.13"` && `git push origin v1.2.13` (use the real version).  
+3. When CI finishes, open **[Latest](https://github.com/ta10101/HWTW/releases/latest)** for **`HWTW.exe`**, **`HWTW.msi`**, **`requirements.txt`**, and macOS **`.dmg`** / **`.app.zip`** / **`.pkg`**. **[All releases](https://github.com/ta10101/HWTW/releases)** stays sorted **newest first**.  
 4. **Optional (maintainers):** configure **[MACOS_SIGNING.md](MACOS_SIGNING.md)** secrets so the macOS artifact is **signed and notarized** instead of **`HWTW-macOS-unsigned.dmg`**.
 
 ### Local PyInstaller build (optional)

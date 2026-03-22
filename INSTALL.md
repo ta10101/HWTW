@@ -1,13 +1,21 @@
 # Installing HWTW (Holo Wind Tunnel GUI)
 
+## Get the latest build first
+
+Use **[Latest](https://github.com/ta10101/HWTW/releases/latest)** (newest published release). **[All releases](https://github.com/ta10101/HWTW/releases)** lists older versions (**newest at the top**).
+
+**Windows (direct links):** [`HWTW.exe`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW.exe) · [`HWTW.msi`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW.msi) · [`SHA256SUMS.txt`](https://github.com/ta10101/HWTW/releases/latest/download/SHA256SUMS.txt) · [`requirements.txt`](https://github.com/ta10101/HWTW/releases/latest/download/requirements.txt)
+
+**macOS:** **[Latest → Assets](https://github.com/ta10101/HWTW/releases/latest)** — **`.dmg`**, **`.app.zip`**, **`.pkg`**, **`SHA256SUMS-macos.txt`**.
+
+---
+
 HWTW helps you run the **Holochain Wind Tunnel** runner with Docker.  
 **Official guide (PDF):** [EdgeNodeWindTunnelGuide.pdf](https://holo.host/files/EdgeNodeWindTunnelGuide.pdf)
 
 **Important:** Wind Tunnel needs **Docker** running. HWTW only runs Docker commands for you — install Docker separately.
 
-**Official downloads:** Use **`ta10101/HWTW`** only.
-
-**Latest release — direct links (Windows):** [`HWTW.exe`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW.exe) · [`HWTW.msi`](https://github.com/ta10101/HWTW/releases/latest/download/HWTW.msi) · [`SHA256SUMS.txt`](https://github.com/ta10101/HWTW/releases/latest/download/SHA256SUMS.txt) · [`requirements.txt`](https://github.com/ta10101/HWTW/releases/latest/download/requirements.txt). **macOS:** open **[Latest release → Assets](https://github.com/ta10101/HWTW/releases/latest)** for **`.dmg`**, **`.app.zip`**, **`.pkg`**, and **`SHA256SUMS-macos.txt`**.
+**Official downloads:** Use **`ta10101/HWTW`** only — preferably **[Latest](https://github.com/ta10101/HWTW/releases/latest)**.
 
 ### Not covered by this guide
 
@@ -28,7 +36,7 @@ HWTW helps you run the **Holochain Wind Tunnel** runner with Docker.
 
 | Step | What to do |
 | ---- | ---------- |
-| 1 | Download **`HWTW.exe`** (portable) or **`HWTW.msi`** (64-bit installer) from **[GitHub Releases](https://github.com/ta10101/HWTW/releases)**. You do **not** need Python for either build. **MSI (**v1.2.12+**):** wizard with license → pick **Custom** to opt out of the **Desktop shortcut** → finish. Setup does not auto-launch the app — open **HWTW** from Start menu, desktop, or **`C:\Program Files\HWTW\HWTW.exe`**. |
+| 1 | Download **`HWTW.exe`** (portable) or **`HWTW.msi`** (64-bit installer) from **[Latest](https://github.com/ta10101/HWTW/releases/latest)** (see top of this page). You do **not** need Python for either build. **MSI (**v1.2.12+**):** wizard with license → pick **Custom** to opt out of the **Desktop shortcut** → finish (**v1.2.13+** app icon). Setup does not auto-launch — open **HWTW** from Start menu, desktop, or **`C:\Program Files\HWTW\HWTW.exe`**. |
 | 2 | Install **[Docker Desktop for Windows](https://docs.docker.com/desktop/setup/install/windows-install/)** (one time). Use **WSL 2** if Docker asks for it. |
 | 3 | **Start Docker Desktop** and wait until it is fully running. |
 | 4 | Run **`HWTW.exe`** (or the shortcut from **`HWTW.msi`** under Program Files). If SmartScreen warns, use **More info → Run anyway** if you trust the release. |
@@ -40,7 +48,7 @@ HWTW helps you run the **Holochain Wind Tunnel** runner with Docker.
 
 **Checklist**
 
-- [ ] `HWTW.exe` or `HWTW.msi` from Releases  
+- [ ] `HWTW.exe` or `HWTW.msi` from **[Latest](https://github.com/ta10101/HWTW/releases/latest)**  
 - [ ] Docker Desktop installed and **running**  
 - [ ] WSL 2 OK if Docker needed it  
 
@@ -63,7 +71,7 @@ Use **Python 3.10+**.
 
 | Step | What to do |
 | ---- | ---------- |
-| 1 | Download from **[Releases](https://github.com/ta10101/HWTW/releases)** — **`.dmg`**, **`HWTW-macOS.app.zip`**, or **`HWTW-macOS.pkg`**. |
+| 1 | Download from **[Latest → Assets](https://github.com/ta10101/HWTW/releases/latest)** — **`.dmg`**, **`HWTW-macOS.app.zip`**, or **`HWTW-macOS.pkg`**. |
 | 2 | **DMG:** drag **HWTW** to **Applications**. **Zip:** unzip, drag **HWTW.app** to **Applications**. **Pkg:** run the installer (installs to **/Applications**). |
 | 3 | If macOS blocks an unsigned build: **Right-click → Open**, or **System Settings → Privacy & Security**. |
 | 4 | Install **[Docker Desktop for Mac](https://docs.docker.com/desktop/setup/install/mac-install/)** and keep it running for Wind Tunnel. |
@@ -85,7 +93,7 @@ bash install-macos.sh
 
 **Checklist**
 
-- [ ] DMG from Releases **or** `import tkinter` works for script/source path  
+- [ ] DMG / pkg / zip from **[Latest](https://github.com/ta10101/HWTW/releases/latest)** **or** `import tkinter` works for script/source path  
 - [ ] **`install-macos.sh`** done if not using the DMG (or you use **`python3 main.py`**)  
 - [ ] Docker Desktop **running** for Wind Tunnel  
 

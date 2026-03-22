@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Existing tag to build and publish (e.g. v1.2.8)"
+        description: "Existing tag to build and publish (e.g. v1.2.13)"
         required: true
         type: string
 
@@ -108,6 +108,8 @@ jobs:
           generate_release_notes: true
           body: |
             ### Download latest (Windows — these links track **Latest** after this release is published)
+
+            **Users:** install from **[Latest](https://github.com/ta10101/HWTW/releases/latest)** — GitHub shows **newest first** under **[All releases](https://github.com/ta10101/HWTW/releases)**.
 
             | Asset | Direct link |
             | ----- | ----------- |

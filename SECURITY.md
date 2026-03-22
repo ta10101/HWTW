@@ -59,7 +59,7 @@ HWTW is a **local desktop GUI**: it does **not** open a network port or accept r
 - **Browser links** are opened only for **`http:`** / **`https:`** URLs with a host (blocks `javascript:`, `file:`, etc. if a string were ever malformed).
 - **Container IDs** from `docker ps` are checked to look like hex IDs before `docker stop` / `docker logs`.
 
-Reducing risk further on the **machine** still means: keep **Docker Desktop** updated, do not run random containers alongside Wind Tunnel unless you trust them, and download **`HWTW.exe` / `.dmg`** only from **official [Releases](https://github.com/ta10101/HWTW/releases)** for this repo.
+Reducing risk further on the **machine** still means: keep **Docker Desktop** updated, do not run random containers alongside Wind Tunnel unless you trust them, and download **`HWTW.exe` / `.dmg`** only from the official **[Latest](https://github.com/ta10101/HWTW/releases/latest)** release for this repo (or **[All releases](https://github.com/ta10101/HWTW/releases)** if you must pin an older tag — **newest first** in the list).
 
 ## Personal / machine data
 

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Documentation:** README and INSTALL lead with **Get the latest release** / **Get the latest build first**; emphasize **[Latest](https://github.com/ta10101/HWTW/releases/latest)** and that **[All releases](https://github.com/ta10101/HWTW/releases)** lists **newest first**. SECURITY, Windows/macOS install steps, release note template, and **`workflow_dispatch`** example tag updated to match.
+
 ## [1.2.13] - 2026-03-22
 
 ### Added
