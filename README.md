@@ -16,6 +16,8 @@ Desktop app for setting up a **Holo Edge Node** as a [Holochain Wind Tunnel](htt
 
 **Everyone:** Wind Tunnel needs **Docker** running. HWTW only drives Docker — it does not replace Docker.
 
+**Official downloads:** Get **`HWTW.exe`**, the macOS **`.dmg`**, and **`requirements.txt`** only from **[GitHub Releases](https://github.com/ta10101/HWTW/releases)** for this repository (`ta10101/HWTW`). Verify builds using **`SHA256SUMS.txt`** on each release when provided.
+
 **One-page install only:** **[INSTALL.md](INSTALL.md)** (Windows, macOS, Linux — easy to print or share).
 
 ### What we do **not** cover
@@ -263,6 +265,8 @@ python main.py
 
 On **Linux**, prefer **`install-linux.sh`**. On **macOS**, prefer **`install-macos.sh`** (or let **`python3 main.py`** create **`.venv`**). On the **first run**, the app may create local files (e.g. **`.wind_tunnel_gui_setup_done`** — git-ignored).
 
+**Optional — default dark theme before any config exists:** set environment variable **`HWTW_DEFAULT_DARK=1`** (or `true` / `yes`) when launching HWTW. After you use **View → Dark theme**, the choice is stored in **`hwtw_config.json`** and overrides the env default.
+
 ---
 
 ## Make the GitHub repo public (maintainers)
@@ -292,7 +296,7 @@ The links in this README use **`https://github.com/ta10101/HWTW`**. A **404** fr
 
 ## Release binaries (CI)
 
-Pushing a **version tag** `v*` runs two jobs: **Windows** builds **`HWTW.exe`** + uploads **`requirements.txt`**; **macOS** builds **`HWTW.app`**, produces **`HWTW-macOS.dmg`** (signed + notarized when [signing secrets](MACOS_SIGNING.md) are set) or **`HWTW-macOS-unsigned.dmg`**, and uploads that DMG. **Linux** still uses the install scripts or **`python3 main.py`** from this repo.
+Pushing a **version tag** `v*` builds **Windows** (**`HWTW.exe`**, **`requirements.txt`**) and **macOS** (**`HWTW-macOS.dmg`** or **`HWTW-macOS-unsigned.dmg`** — see [MACOS_SIGNING.md](MACOS_SIGNING.md)), then publishes **one GitHub Release** with those files plus **`SHA256SUMS.txt`** (SHA-256 of each binary) for verification. **Linux** still uses the install scripts or **`python3 main.py`** from this repo.
 
 ## Publishing on GitHub
 
@@ -324,7 +328,7 @@ copy requirements.txt dist\
 
 ## CI
 
-GitHub Actions: `python -m py_compile main.py` on **ubuntu-latest**, **windows-latest**, and **macos-latest**; **`bash -n`** on Linux and macOS install scripts and **`packaging/build-macos-dmg.sh`**.
+GitHub Actions: `python -m py_compile main.py` and **`pytest`** on **ubuntu-latest**, **windows-latest**, and **macos-latest**; **`bash -n`** on Linux and macOS install scripts and **`packaging/build-macos-dmg.sh`**.
 
 ## Security
 

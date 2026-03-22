@@ -24,8 +24,24 @@ from tkinter import filedialog, messagebox, scrolledtext, ttk
 
 psutil = None  # set in bootstrap_requirements()
 
-__version__ = "1.2.3"
+__version__ = "1.2.4"
 APP_SHORT = "HWTW"
+
+# Shown once per version after upgrade (see _show_version_news_if_needed).
+WHATS_NEW_BY_VERSION: dict[str, str] = {
+    "1.2.4": (
+        "• Easy start: big “Wind Tunnel runner” status line (running or not).\n"
+        "• One-time “What’s new” after each upgrade (this dialog).\n"
+        "• Optional dark UI by default: set env HWTW_DEFAULT_DARK=1 before launch, "
+        "or keep using View → Dark theme (saved in hwtw_config.json).\n"
+        "• Releases on GitHub include SHA256SUMS.txt to verify downloads.\n"
+        "• README reminds you to use official Releases only."
+    ),
+    "1.2.3": (
+        "• Security: stricter hostname checks, safer browser links, container ID checks.\n"
+        "• See SECURITY.md on GitHub for details."
+    ),
+}
 
 IMAGE = "ghcr.io/holochain/wind-tunnel-runner:latest"
 RUNNER_STATUS_ORIGIN = "https://wind-tunnel-runner-status.holochain.org"
@@ -48,6 +64,11 @@ DEFAULT_LOG_TAIL = 200
 # DNS hostname subset (RFC 1123–style): avoids odd characters reaching `docker --hostname` or URLs.
 _HOSTNAME_LABEL_RE = re.compile(r"^(?:[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)$")
 _DOCKER_CONTAINER_ID_RE = re.compile(r"^[0-9a-f]{12,64}$", re.IGNORECASE)
+
+
+def _env_prefers_dark_default() -> bool:
+    """If dark_theme is not in config, allow install-wide default via environment."""
+    return os.environ.get("HWTW_DEFAULT_DARK", "").strip().lower() in ("1", "true", "yes")
 
 
 def validate_wind_tunnel_hostname(h: str) -> tuple[bool, str]:
@@ -1016,7 +1037,10 @@ class WindTunnelApp(tk.Tk):
 
         cfg = load_config()
         self._sv_ttk = _import_sv_ttk()
-        dark = bool(cfg.get("dark_theme", False))
+        if "dark_theme" in cfg:
+            dark = bool(cfg["dark_theme"])
+        else:
+            dark = _env_prefers_dark_default()
         self._var_dark = tk.BooleanVar(value=dark)
         if self._sv_ttk:
             self._sv_ttk.set_theme("dark" if dark else "light")
@@ -1037,6 +1061,8 @@ class WindTunnelApp(tk.Tk):
 
         if not cfg.get("hide_welcome_easy"):
             self.after(900, lambda: self._show_welcome_easy_dialog(force=False))
+        else:
+            self.after(1200, self._show_version_news_if_needed)
 
     def _build_menubar(self) -> None:
         menubar = tk.Menu(self)
@@ -1058,6 +1084,10 @@ class WindTunnelApp(tk.Tk):
         help_m.add_command(
             label="Holochain runner status page…",
             command=self._on_open_runner_status_url,
+        )
+        help_m.add_command(
+            label="HWTW downloads (GitHub Releases)…",
+            command=lambda: _open_url("https://github.com/ta10101/HWTW/releases"),
         )
         menubar.add_cascade(label="Help", menu=help_m)
         self.config(menu=menubar)
@@ -1183,6 +1213,20 @@ class WindTunnelApp(tk.Tk):
         )
         ToolTip(self._easy_fr_pc, _tip_pc)
         ToolTip(self._easy_pill_pc, _tip_pc)
+
+        self._lbl_runner_status_banner = tk.Label(
+            tab,
+            text="Wind Tunnel runner: checking…",
+            font=("Segoe UI", 12, "bold"),
+            wraplength=860,
+            justify=tk.LEFT,
+            anchor=tk.W,
+            fg="#333",
+            padx=2,
+            pady=6,
+        )
+        self._lbl_runner_status_banner.pack(fill=tk.X, pady=(0, 6))
+
         self._easy_canvas = tk.Canvas(
             tab, height=72, background="#f5f5f5", highlightthickness=1, highlightbackground="#ccc"
         )
@@ -1474,9 +1518,50 @@ class WindTunnelApp(tk.Tk):
             except tk.TclError:
                 pass
             self._welcome_win = None
+            self.after(400, self._show_version_news_if_needed)
 
         win.protocol("WM_DELETE_WINDOW", _close)
         ttk.Button(frm, text="Got it — let’s go", command=_close).pack(anchor=tk.E, pady=4)
+
+    def _show_version_news_if_needed(self) -> None:
+        """One-time per version dialog after upgrade (or first install)."""
+        if getattr(self, "_version_news_ui_open", False):
+            return
+        cfg = load_config()
+        if cfg.get("last_seen_version") == __version__:
+            return
+        self._version_news_ui_open = True
+        extra = WHATS_NEW_BY_VERSION.get(__version__)
+        lines = [f"What’s new in v{__version__}", ""]
+        if extra:
+            lines.append(extra)
+            lines.append("")
+        lines.append("Full release notes: https://github.com/ta10101/HWTW/releases")
+        body = "\n".join(lines)
+
+        win = tk.Toplevel(self)
+        win.title(f"HWTW v{__version__}")
+        win.minsize(420, 280)
+        win.geometry("520x360")
+        win.transient(self)
+        frm = ttk.Frame(win, padding=14)
+        frm.pack(fill=tk.BOTH, expand=True)
+        ttk.Label(frm, text=f"Updated to v{__version__}", font=("Segoe UI", 12, "bold")).pack(anchor=tk.W)
+        txt = scrolledtext.ScrolledText(frm, wrap=tk.WORD, font=("Segoe UI", 10), height=12, width=58)
+        txt.pack(fill=tk.BOTH, expand=True, pady=(10, 8))
+        txt.insert("1.0", body)
+        txt.configure(state=tk.DISABLED)
+
+        def _ok() -> None:
+            save_config(last_seen_version=__version__)
+            self._version_news_ui_open = False
+            try:
+                win.destroy()
+            except tk.TclError:
+                pass
+
+        win.protocol("WM_DELETE_WINDOW", _ok)
+        ttk.Button(frm, text="OK", command=_ok).pack(anchor=tk.E)
 
     def _easy_set_pill(self, index: int, line1: str, line2: str, ok: bool | None) -> None:
         lbl = (self._easy_pill_docker, self._easy_pill_wsl, self._easy_pill_runner, self._easy_pill_pc)[index]
@@ -1529,8 +1614,28 @@ class WindTunnelApp(tk.Tk):
             if d_ok:
                 r_ok = wind_tunnel_runner_running()
                 self._easy_set_pill(2, "Wind Tunnel", "Container up ✓" if r_ok else "Not running", r_ok)
+                if r_ok:
+                    self._lbl_runner_status_banner.configure(
+                        text=(
+                            "Wind Tunnel runner: RUNNING — the official wind-tunnel-runner container is up on this PC. "
+                            "You do not need to press Start again unless you stopped it."
+                        ),
+                        fg="#0d5c0d",
+                    )
+                else:
+                    self._lbl_runner_status_banner.configure(
+                        text=(
+                            "Wind Tunnel runner: NOT RUNNING — when Docker is ready, use “Download Wind Tunnel image” "
+                            "once, then “Start Wind Tunnel on this PC”."
+                        ),
+                        fg="#8a1a1a",
+                    )
             else:
                 self._easy_set_pill(2, "Wind Tunnel", "Need Docker first", False)
+                self._lbl_runner_status_banner.configure(
+                    text="Wind Tunnel runner: can’t tell yet — start Docker Desktop and wait until the Docker tile is green.",
+                    fg="#555",
+                )
 
             pc_ok = None
             pc_sub = "—"

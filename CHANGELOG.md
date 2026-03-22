@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.4] - 2026-03-22
+
+### Added
+
+- **Easy start:** prominent **Wind Tunnel runner** status line (running / not running / need Docker).
+- **In-app “What’s new”** once per version after upgrade or first run; text keyed by version (`WHATS_NEW_BY_VERSION` in `main.py`). **`last_seen_version`** stored in `hwtw_config.json`.
+- **Optional default dark theme:** if **`dark_theme`** is not in config, **`HWTW_DEFAULT_DARK=1`** (or `true` / `yes`) selects dark UI on launch; **View → Dark theme** still persists preference.
+- **Help → HWTW downloads (GitHub Releases)…**
+- **Release workflow:** single **publish** job builds **`SHA256SUMS.txt`** (SHA-256 of **`HWTW.exe`**, **`requirements.txt`**, DMG) and uploads one Release with all assets.
+- **`tests/test_hostname.py`** + **CI** runs **`pytest`** for hostname validation.
+
+### Changed
+
+- **README / INSTALL / SECURITY:** official downloads only from **GitHub Releases**; verify with **`SHA256SUMS.txt`**.
+
 ## [1.2.3] - 2026-03-22
 
 ### Security

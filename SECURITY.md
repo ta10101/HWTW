@@ -19,7 +19,7 @@ We will try to acknowledge reports within a few business days.
 
 ## Supply chain — releases
 
-`HWTW.exe` and `requirements.txt` attached to GitHub **Releases** are produced by the **Release** workflow on this repository. Compare the release tag to the workflow run and commit SHA when verifying binaries.
+`HWTW.exe`, macOS **`.dmg`**, `requirements.txt`, and **`SHA256SUMS.txt`** on GitHub **Releases** are produced by the **Release** workflow on this repository. Compare the release tag to the workflow run and commit SHA when verifying binaries; use `sha256sum -c SHA256SUMS.txt` (Linux) or compare hashes manually on Windows/macOS.
 
 ## Maintainer checklist (GitHub settings)
 
