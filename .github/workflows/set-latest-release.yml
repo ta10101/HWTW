@@ -24,9 +24,10 @@ jobs:
           TAG="${{ inputs.tag }}"
           TAG="${TAG#refs/tags/}"
           REPO="${{ github.repository }}"
-          # Tag alone does not create a GitHub Release; ensure one exists before GET by tag.
+          # Tag alone does not create a GitHub Release; ensure one exists first.
           gh release create "$TAG" -R "$REPO" --title "$TAG" --draft --verify-tag --generate-notes || true
-          RID=$(gh api "repos/${REPO}/releases/tags/${TAG}" -q .id)
+          # releases/tags/{tag} 404s for drafts; resolve id via gh release view.
+          RID=$(gh release view "$TAG" -R "$REPO" --json databaseId -q .databaseId)
           gh api "repos/${REPO}/releases/${RID}" -X PATCH \
             -f draft=false \
             -f make_latest=true

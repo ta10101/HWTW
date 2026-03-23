@@ -355,11 +355,11 @@ jobs:
           set -eux
           TAG="${{ needs['windows-exe'].outputs.tag }}"
           REPO="${{ github.repository }}"
-          # Git tag != GitHub Release: gh api .../releases/tags/... returns 404 until a release exists.
-          # Create a draft if missing (idempotent with || true when release already exists).
+          # Git tag != GitHub Release: create a draft if missing (idempotent with || true).
           gh release create "$TAG" -R "$REPO" --title "$TAG" --draft --verify-tag --generate-notes || true
+          # GET .../releases/tags/{tag} returns 404 for DRAFT releases (GitHub API quirk). Use release list / gh release view.
+          RID=$(gh release view "$TAG" -R "$REPO" --json databaseId -q .databaseId)
           # PATCH is reliable for draft→published + make_latest (gh release edit --latest can miss edge cases).
-          RID=$(gh api "repos/${REPO}/releases/tags/${TAG}" -q .id)
           gh api "repos/${REPO}/releases/${RID}" -X PATCH \
             -f draft=false \
             -f make_latest=true
