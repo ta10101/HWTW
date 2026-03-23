@@ -29,11 +29,15 @@ psutil = None  # set in bootstrap_requirements()
 _SINGLE_INSTANCE_MUTEX: object | None = None
 _SINGLE_INSTANCE_LOCK_FD: int | None = None
 
-__version__ = "1.3.6"
+__version__ = "1.3.7"
 APP_SHORT = "HWTW"
 
 # Shown once per version after upgrade (see _show_version_news_if_needed).
 WHATS_NEW_BY_VERSION: dict[str, str] = {
+    "1.3.7": (
+        "• **Look & feel:** Graffiti-style **banner** with a **Holo duck** and **hairdryer** mascot, purple chrome, and brighter **Easy start** status pills + **cyan** CPU sparkline.\n"
+        "• **CI:** **`pytest.ini`** fixes **`ModuleNotFoundError: main`** on Windows runners; publish job avoids creating a **duplicate empty draft** release."
+    ),
     "1.3.6": (
         "• **GitHub Release CI:** **Publish release** resolves the release id with **`gh release view`** (drafts 404 on **`releases/tags/...`**), so the pipeline can publish and set **Latest** reliably."
     ),
@@ -141,6 +145,15 @@ CONFIG_NAME = "hwtw_config.json"
 MIN_RAM_BYTES = 8 * 1024**3
 MIN_DISK_FREE_BYTES = 10 * 1024**3
 DEFAULT_LOG_TAIL = 200
+
+# Graffiti / mascot header (tk.Canvas — no image assets required)
+GRAFFITI_ROOT = "#0f0620"
+GRAFFITI_BANNER = "#1a0a32"
+GRAFFITI_SPRAY = "#4a148c"
+GRAFFITI_MAGENTA = "#ff2ec4"
+GRAFFITI_CYAN = "#00f5d4"
+GRAFFITI_YELLOW = "#ffe74c"
+GRAFFITI_ORANGE = "#ff9f1c"
 
 # DNS hostname subset (RFC 1123–style): avoids odd characters reaching `docker --hostname` or URLs.
 _HOSTNAME_LABEL_RE = re.compile(r"^(?:[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)$")
@@ -1221,6 +1234,10 @@ class WindTunnelApp(tk.Tk):
         self._var_dark = tk.BooleanVar(value=dark)
         if self._sv_ttk:
             self._sv_ttk.set_theme("dark" if dark else "light")
+        try:
+            self.configure(bg=GRAFFITI_ROOT)
+        except tk.TclError:
+            pass
 
         hn = cfg.get("hostname")
         self.var_hostname = tk.StringVar(value=hn if isinstance(hn, str) and hn.strip() else "nomad-client-")
@@ -1275,9 +1292,133 @@ class WindTunnelApp(tk.Tk):
         dark = self._var_dark.get()
         self._sv_ttk.set_theme("dark" if dark else "light")
         save_config(dark_theme=dark)
+        self._sync_footer_theme()
+
+    def _sync_footer_theme(self) -> None:
+        lbl = getattr(self, "_lbl_foot", None)
+        if lbl is None:
+            return
+        if self._var_dark.get():
+            lbl.configure(foreground="#c5c2d6")
+        else:
+            lbl.configure(foreground="#555555")
+
+    def _graffiti_banner_title_font(self) -> tuple[str, int, str]:
+        if sys.platform == "win32":
+            return ("Impact", 26, "bold")
+        if sys.platform == "darwin":
+            return ("Helvetica Neue", 24, "bold")
+        return ("DejaVu Sans", 22, "bold")
+
+    def _draw_graffiti_banner_art(self, cv: tk.Canvas, w: int, h: int) -> None:
+        cv.delete("art")
+        # Background splatter / spray lines
+        for i in range(0, int(w), 44):
+            cv.create_line(i, 0, i + 18, h, fill=GRAFFITI_SPRAY, width=1, tags="art")
+        for i in range(12, int(w), 90):
+            cv.create_oval(i, h - 28, i + 6, h - 22, fill=GRAFFITI_MAGENTA, outline="", tags="art")
+            cv.create_oval(i + 30, 8, i + 38, 16, fill=GRAFFITI_CYAN, outline="", tags="art")
+
+        # --- Holo duck (left): simple friendly mascot ---
+        ox = max(24, int(w * 0.04))
+        oy = h // 2
+        cv.create_oval(ox - 8, oy - 8, ox + 52, oy + 36, fill=GRAFFITI_YELLOW, outline="#c9a227", width=2, tags="art")
+        cv.create_oval(ox + 38, oy - 28, ox + 82, oy + 12, fill=GRAFFITI_YELLOW, outline="#c9a227", width=2, tags="art")
+        cv.create_polygon(
+            ox + 78,
+            oy - 8,
+            ox + 102,
+            oy - 4,
+            ox + 78,
+            oy + 4,
+            fill=GRAFFITI_ORANGE,
+            outline="#cc7700",
+            width=1,
+            tags="art",
+        )
+        cv.create_oval(ox + 58, oy - 18, ox + 66, oy - 10, fill="#1a1a2e", outline="", tags="art")
+        cv.create_text(
+            ox + 46,
+            oy + 42,
+            text="HOLO",
+            fill=GRAFFITI_CYAN,
+            font=("Segoe UI", 8, "bold") if sys.platform == "win32" else ("TkDefaultFont", 8, "bold"),
+            tags="art",
+        )
+
+        # --- Hairdryer (right): “blow that tunnel dry” ---
+        rx = min(w - 24, int(w * 0.88))
+        ry = oy
+        cv.create_rectangle(rx - 8, ry + 8, rx + 12, ry + 44, fill="#7b2cbf", outline="#e0e0e0", width=1, tags="art")
+        cv.create_oval(rx - 58, ry - 12, rx + 8, ry + 28, fill="#d0d0d0", outline="#555555", width=2, tags="art")
+        cv.create_polygon(
+            rx - 88,
+            ry - 4,
+            rx - 58,
+            ry - 10,
+            rx - 58,
+            ry + 18,
+            rx - 88,
+            ry + 12,
+            fill=GRAFFITI_CYAN,
+            outline="#00b4a0",
+            width=1,
+            tags="art",
+        )
+        for i, dy in enumerate((-6, 0, 6)):
+            cv.create_line(
+                rx - 118 - i * 10,
+                ry + dy,
+                rx - 92 - i * 8,
+                ry + dy,
+                fill=GRAFFITI_CYAN,
+                width=2,
+                tags="art",
+            )
+
+        fam, sz, wt = self._graffiti_banner_title_font()
+        tx, ty = w // 2, h // 2 - 8
+        cv.create_text(tx + 3, ty + 3, text="HWTW", fill="#2d0a52", font=(fam, sz, wt), tags="art")
+        cv.create_text(tx + 1, ty + 1, text="HWTW", fill=GRAFFITI_MAGENTA, font=(fam, sz, wt), tags="art")
+        cv.create_text(tx, ty, text="HWTW", fill=GRAFFITI_YELLOW, font=(fam, sz, wt), tags="art")
+        sub = "Wind tunnel vibes • duck-approved • hairdryer-ready"
+        cv.create_text(
+            w // 2,
+            h // 2 + 28,
+            text=sub,
+            fill="#e8e4f5",
+            font=("Segoe UI", 10, "italic") if sys.platform == "win32" else ("TkDefaultFont", 10, "italic"),
+            tags="art",
+        )
+
+    def _build_graffiti_banner(self, parent: tk.Widget) -> None:
+        wrap = tk.Frame(parent, bg=GRAFFITI_BANNER, highlightthickness=0)
+        wrap.pack(fill=tk.X, pady=(0, 6))
+        cv = tk.Canvas(
+            wrap,
+            height=112,
+            bg=GRAFFITI_BANNER,
+            highlightthickness=0,
+            bd=0,
+        )
+        cv.pack(fill=tk.X)
+        self._banner_canvas = cv
+
+        def on_configure(event: tk.Event) -> None:
+            if event.widget != cv:
+                return
+            ww = max(int(event.width), 320)
+            hh = 112
+            self._draw_graffiti_banner_art(cv, ww, hh)
+
+        cv.bind("<Configure>", on_configure)
 
     def _build_ui(self) -> None:
-        main = ttk.Frame(self, padding=12)
+        shell = tk.Frame(self, bg=GRAFFITI_ROOT, highlightthickness=0)
+        shell.pack(fill=tk.BOTH, expand=True)
+        self._build_graffiti_banner(shell)
+
+        main = ttk.Frame(shell, padding=12)
         main.pack(fill=tk.BOTH, expand=True)
 
         top_bar = ttk.Frame(main)
@@ -1314,13 +1455,15 @@ class WindTunnelApp(tk.Tk):
                 "Wind Tunnel needs Docker installed and running separately. "
                 "Flags --privileged / --net=host apply inside the container engine."
             )
-        ttk.Label(
+        self._lbl_foot = ttk.Label(
             foot,
             text=_foot,
             font=("Segoe UI", 8),
             foreground="#555",
             wraplength=880,
-        ).pack(anchor=tk.W)
+        )
+        self._lbl_foot.pack(anchor=tk.W)
+        self._sync_footer_theme()
 
         self._update_hostname_label()
         self.after(500, self._update_hostname_label_loop)
@@ -1339,7 +1482,7 @@ class WindTunnelApp(tk.Tk):
             tab,
             text=_easy_intro,
             wraplength=860,
-            font=("Segoe UI", 10),
+            font=("Segoe UI", 10, "bold"),
         )
         intro.pack(anchor=tk.W, pady=(0, 12))
 
@@ -1349,7 +1492,16 @@ class WindTunnelApp(tk.Tk):
             pills.columnconfigure(c, weight=1)
 
         def make_pill(col: int) -> tuple[tk.Frame, tk.Label]:
-            fr = tk.Frame(pills, bd=2, relief=tk.GROOVE, padx=8, pady=8)
+            fr = tk.Frame(
+                pills,
+                bd=0,
+                relief=tk.FLAT,
+                padx=8,
+                pady=8,
+                highlightthickness=2,
+                highlightbackground=GRAFFITI_CYAN,
+                highlightcolor=GRAFFITI_MAGENTA,
+            )
             fr.grid(row=0, column=col, padx=4, sticky=tk.NSEW)
             lb = tk.Label(fr, text="…", font=("Segoe UI", 10, "bold"), justify=tk.CENTER, wraplength=180)
             lb.pack(fill=tk.BOTH, expand=True)
@@ -1744,13 +1896,13 @@ class WindTunnelApp(tk.Tk):
         lbl = (self._easy_pill_docker, self._easy_pill_wsl, self._easy_pill_runner, self._easy_pill_pc)[index]
         fr = self._easy_pill_frames[index]
         if ok is True:
-            bg = "#c8e6c9"
+            bg = "#7bed9f"
         elif ok is False:
-            bg = "#ffcdd2"
+            bg = "#ff6b9d"
         else:
-            bg = "#eceff1"
-        fr.configure(bg=bg)
-        lbl.configure(bg=bg, text=f"{line1}\n{line2}")
+            bg = "#a29bfe"
+        fr.configure(bg=bg, highlightbackground=GRAFFITI_MAGENTA if ok is False else GRAFFITI_CYAN)
+        lbl.configure(bg=bg, fg="#0f0620", text=f"{line1}\n{line2}")
 
     def _draw_cpu_sparkline(self) -> None:
         cv = self._easy_canvas
@@ -1767,7 +1919,7 @@ class WindTunnelApp(tk.Tk):
             y = h - 4 - (h - 8) * min(100.0, max(0.0, p)) / 100.0
             coords.extend([x, y])
         if len(coords) >= 4:
-            cv.create_line(*coords, fill="#1565c0", width=2, smooth=True)
+            cv.create_line(*coords, fill=GRAFFITI_CYAN, width=2, smooth=True)
 
     def _finish_easy_dashboard(
         self,

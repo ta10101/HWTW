@@ -7,9 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.7] - 2026-03-23
+
+### Added
+
+- **UI:** Graffiti-style **header banner** (`tk.Canvas`): **Holo duck** + **hairdryer** mascots, spray accents, stacked **HWTW** title; deep **purple** root background; **Easy start** pills with neon borders and **green / pink / lavender** states; **cyan** CPU sparkline; footer text contrast in dark mode.
+
 ### Fixed
 
-- **GitHub Actions:** **Publish release** / **Set release as Latest** only run **`gh release create`** when **`gh release view`** fails, so a second empty draft is not created for the same tag.
+- **GitHub Actions (CI):** **`pytest.ini`** with **`pythonpath = .`** so **`from main import …`** works on **Windows** runners (**`ModuleNotFoundError: main`** during collection).
+- **GitHub Actions (Release):** **Publish release** / **Set release as Latest** only run **`gh release create`** when **`gh release view`** fails, avoiding a second **empty draft** for the same tag.
 
 ## [1.3.6] - 2026-03-23
 
