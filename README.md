@@ -1,5 +1,12 @@
 # HWTW — Holo Wind Tunnel runner (GUI)
 
+[![Latest release](https://img.shields.io/github/v/release/ta10101/HWTW?label=Latest&logo=github)](https://github.com/ta10101/HWTW/releases/latest)
+[![License](https://img.shields.io/github/license/ta10101/HWTW)](LICENSE)
+
+**Repository:** [github.com/ta10101/HWTW](https://github.com/ta10101/HWTW) · **Downloads:** **[Latest → Assets](https://github.com/ta10101/HWTW/releases/latest)** — prebuilt **Windows** (**`HWTW.exe`**, **`HWTW.msi`**) and **macOS** (**`.dmg`**, **`.app.zip`**, **`.pkg`**). **Linux:** use **[install-linux.sh](install-linux.sh)** / **[run-hwtw-linux.sh](run-hwtw-linux.sh)** (or **`python3 main.py`**).
+
+---
+
 ## Get the latest release
 
 **Start here:** use GitHub’s **[Latest](https://github.com/ta10101/HWTW/releases/latest)** release — that is always the **newest published** build (the green **Latest** badge). The table below uses **`/releases/latest/download/...`** so these URLs stay correct when you upgrade.
@@ -85,7 +92,7 @@ You use a normal **Windows PC** and want the simplest path: a downloaded **`.exe
 
 1. **Download `HWTW.exe` or `HWTW.msi`**  
    Prefer **[Latest](https://github.com/ta10101/HWTW/releases/latest)** (see [Get the latest release](#get-the-latest-release)) — **`HWTW.exe`** (portable) or **`HWTW.msi`** (64-bit installer under **`C:\Program Files\HWTW\`**). You do **not** need Python on Windows for either build.  
-   **After the MSI finishes:** it does **not** auto-open the app. The wizard (**v1.2.12+**) includes a **license** and **Setup Type** — choose **Custom** if you want to turn **Desktop shortcut** off (**v1.2.13+** app icon; **v1.2.14+** **Start → HWTW → Uninstall HWTW**). Then start **HWTW** from the **Start** menu (**HWTW** folder), the **desktop** shortcut (if enabled), or **`C:\Program Files\HWTW\HWTW.exe`**.
+   **After the MSI finishes:** it does **not** auto-open the app. The wizard (**v1.2.12+**) shows a **license** and **Setup Type** — **Typical** uses the default folder; **Custom** only changes the **install path**. **v1.3.5+** adds a **desktop** shortcut on the **shared (public) desktop** for everyone on the PC (**`C:\Users\Public\Desktop`**), plus **Start → HWTW** and **Uninstall HWTW** (**v1.2.14+**). Open **HWTW** from **Start**, that **desktop**, or **`C:\Program Files\HWTW\HWTW.exe`**.
 
 2. **Install Docker Desktop** (one time, separate from HWTW)  
    Install from Docker’s site: **[Windows install guide](https://docs.docker.com/desktop/setup/install/windows-install/)**.  
@@ -368,7 +375,7 @@ git push -u origin main
 ## Creating a release
 
 1. Bump **`__version__`** in `main.py` and **`CHANGELOG.md`**, commit and push.  
-2. `git tag -a v1.3.6 -m "Release v1.3.6"` && `git push origin v1.3.6` (use the real version).  
+2. `git tag -a v1.x.y -m "Release v1.x.y"` && `git push origin v1.x.y` (use the real version, e.g. **v1.3.6**).  
 3. When CI finishes, open **[Latest](https://github.com/ta10101/HWTW/releases/latest)** for **`HWTW.exe`**, **`HWTW.msi`**, **`requirements.txt`**, and macOS **`.dmg`** / **`.app.zip`** / **`.pkg`**. **[All releases](https://github.com/ta10101/HWTW/releases)** stays sorted **newest first**.  
 4. **Optional (maintainers):** configure **[MACOS_SIGNING.md](MACOS_SIGNING.md)** secrets so the macOS artifact is **signed and notarized** instead of **`HWTW-macOS-unsigned.dmg`**.
 
