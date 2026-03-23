@@ -29,11 +29,14 @@ psutil = None  # set in bootstrap_requirements()
 _SINGLE_INSTANCE_MUTEX: object | None = None
 _SINGLE_INSTANCE_LOCK_FD: int | None = None
 
-__version__ = "1.3.5"
+__version__ = "1.3.6"
 APP_SHORT = "HWTW"
 
 # Shown once per version after upgrade (see _show_version_news_if_needed).
 WHATS_NEW_BY_VERSION: dict[str, str] = {
+    "1.3.6": (
+        "• **GitHub Release CI:** **Publish release** resolves the release id with **`gh release view`** (drafts 404 on **`releases/tags/...`**), so the pipeline can publish and set **Latest** reliably."
+    ),
     "1.3.5": (
         "• **Windows MSI (WiX):** **`cmpDesktopShortcut`** is referenced directly under **`MainFeature`** so **ICE69** passes (nested **DesktopShortcutFeature** counted as a different feature from **`filHWTWexe`**)."
     ),

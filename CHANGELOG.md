@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.6] - 2026-03-23
+
+### Fixed
+
+- **GitHub Actions (Release):** **Publish release** no longer uses **`GET .../releases/tags/{tag}`** to read the release id while the release is still a **draft** (that API returns **404** for drafts). Use **`gh release view $TAG --json databaseId`** instead; same change in **Set release as Latest**.
+
 ## [1.3.5] - 2026-03-23
 
 ### Fixed
