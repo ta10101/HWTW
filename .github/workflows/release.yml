@@ -355,8 +355,11 @@ jobs:
           set -eux
           TAG="${{ needs['windows-exe'].outputs.tag }}"
           REPO="${{ github.repository }}"
-          # Git tag != GitHub Release: create a draft if missing (idempotent with || true).
-          gh release create "$TAG" -R "$REPO" --title "$TAG" --draft --verify-tag --generate-notes || true
+          # Create a draft only if no release exists yet. Unconditional `gh release create || true` can add a second
+          # empty draft for the same tag while Windows/macOS already created the real draft (duplicate release rows).
+          if ! gh release view "$TAG" -R "$REPO" >/dev/null 2>&1; then
+            gh release create "$TAG" -R "$REPO" --title "$TAG" --draft --verify-tag --generate-notes
+          fi
           # GET .../releases/tags/{tag} returns 404 for DRAFT releases (GitHub API quirk). Use release list / gh release view.
           RID=$(gh release view "$TAG" -R "$REPO" --json databaseId -q .databaseId)
           # PATCH is reliable for draft→published + make_latest (gh release edit --latest can miss edge cases).

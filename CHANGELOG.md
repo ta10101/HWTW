@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **GitHub Actions:** **Publish release** / **Set release as Latest** only run **`gh release create`** when **`gh release view`** fails, so a second empty draft is not created for the same tag.
+
 ## [1.3.6] - 2026-03-23
 
 ### Fixed
