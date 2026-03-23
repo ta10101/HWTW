@@ -355,6 +355,9 @@ jobs:
           set -eux
           TAG="${{ needs['windows-exe'].outputs.tag }}"
           REPO="${{ github.repository }}"
+          # Git tag != GitHub Release: gh api .../releases/tags/... returns 404 until a release exists.
+          # Create a draft if missing (idempotent with || true when release already exists).
+          gh release create "$TAG" -R "$REPO" --title "$TAG" --draft --verify-tag --generate-notes || true
           # PATCH is reliable for draft→published + make_latest (gh release edit --latest can miss edge cases).
           RID=$(gh api "repos/${REPO}/releases/tags/${TAG}" -q .id)
           gh api "repos/${REPO}/releases/${RID}" -X PATCH \
