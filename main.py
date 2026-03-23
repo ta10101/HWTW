@@ -29,11 +29,14 @@ psutil = None  # set in bootstrap_requirements()
 _SINGLE_INSTANCE_MUTEX: object | None = None
 _SINGLE_INSTANCE_LOCK_FD: int | None = None
 
-__version__ = "1.3.4"
+__version__ = "1.3.5"
 APP_SHORT = "HWTW"
 
 # Shown once per version after upgrade (see _show_version_news_if_needed).
 WHATS_NEW_BY_VERSION: dict[str, str] = {
+    "1.3.5": (
+        "• **Windows MSI (WiX):** **`cmpDesktopShortcut`** is referenced directly under **`MainFeature`** so **ICE69** passes (nested **DesktopShortcutFeature** counted as a different feature from **`filHWTWexe`**)."
+    ),
     "1.3.4": (
         "• **Windows MSI (WiX):** Desktop shortcut is its own component on **`CommonDesktopFolder`** with **HKLM** registry **KeyPath** so **ICE43** / **ICE57** pass (no mixing per-user desktop with per-machine **File** keypath)."
     ),

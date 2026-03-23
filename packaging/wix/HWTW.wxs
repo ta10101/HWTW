@@ -33,15 +33,8 @@
         ConfigurableDirectory="INSTALLFOLDER">
       <ComponentGroupRef Id="ProductComponents" />
       <ComponentRef Id="cmpStartMenuShortcut" />
-      <Feature
-          Id="DesktopShortcutFeature"
-          Title="Desktop shortcut"
-          Description="Adds an HWTW icon to the shared (public) desktop. On Custom setup you can turn this off."
-          Level="1"
-          Display="expand"
-          AllowAdvertise="no">
-        <ComponentRef Id="cmpDesktopShortcut" />
-      </Feature>
+      <!-- ICE69: shortcut Target [#filHWTWexe] requires cmpDesktopShortcut in same Feature as filHWTWexe (not a child Feature). -->
+      <ComponentRef Id="cmpDesktopShortcut" />
     </Feature>
   </Product>
 

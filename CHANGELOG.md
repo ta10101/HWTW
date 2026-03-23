@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.5] - 2026-03-23
+
+### Fixed
+
+- **Windows MSI (WiX):** **ICE69** — **`Target="[#filHWTWexe]"`** on the desktop shortcut requires **`cmpDesktopShortcut`** and **`cmpHWTWexe`** in the **same** Feature. Remove nested **`DesktopShortcutFeature`** and add **`ComponentRef Id="cmpDesktopShortcut"`** under **`MainFeature`** (public desktop shortcut is no longer a separate Custom-setup sub-feature).
+
 ## [1.3.4] - 2026-03-23
 
 ### Fixed
