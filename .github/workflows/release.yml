@@ -169,7 +169,7 @@ jobs:
           gh release delete "$TAG" --repo "${{ github.repository }}" --yes
 
       - name: Create draft GitHub Release (Windows assets)
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.meta.outputs.tag }}
           draft: true
@@ -328,7 +328,7 @@ jobs:
         run: bash packaging/build-macos-zip-pkg.sh
 
       - name: Attach macOS assets to draft release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.meta.outputs.tag }}
           draft: true
